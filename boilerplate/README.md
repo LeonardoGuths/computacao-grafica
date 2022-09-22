@@ -1,7 +1,13 @@
-# Meu boilerplate
+# Boilerplate WebGL
 
-- Partindo dos códigos do boilerplate padrão WebGL + [dat.GUI](https://jasonsturges.medium.com/rapid-prototyping-with-dat-gui-3b1bf062f0a2) e [Scene Graph](https://webgl2fundamentals.org/webgl/lessons/webgl-scene-graph.html) do [WebGL2 Fundamentals](https://webgl2fundamentals.org/)
+## Requisitos
+
+- [NodeJS](https://nodejs.org/)
 
 ## Bibliotecas utilizadas
 
 - [dat.GUI](https://github.com/dataarts/dat.gui)
+
+## Rodar o projeto
+
+Para rodar o trabalho entre na pasta do projeto e rode no terminal `npx live-server`.
