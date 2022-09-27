@@ -42,9 +42,19 @@ var config = {
   rotate: degToRad(20),
   x: 0,
   y: 0,
+  rotation: 0,
   addCaixa: function () {
-    console.log(cubeBufferInfo);
-    console.log(cubeVAO);
+    countC++;
+
+    objeto.children.push({
+      name: `cubo${countC}`,
+      translation: [0, countC, 0],
+    });
+
+    objectsToDraw = [];
+    objects = [];
+    nodeInfosByName = {};
+    scene = makeNode(objeto);
   },
 };
 
@@ -53,6 +63,7 @@ const loadGUI = () => {
   gui.add(config, "rotate", 0, 20, 0.5);
   gui.add(config, "x", -150, 150, 5);
   gui.add(config, "y", -100, 100, 5);
+  gui.add(config, "rotation", -1000, 1000, 10);
   gui.add(config, "addCaixa");
 };
 
@@ -123,7 +134,45 @@ Node.prototype.updateWorldMatrix = function (matrix) {
 
 var cubeVAO;
 var cubeBufferInfo;
+var objectsToDraw = [];
+var objects = [];
+var nodeInfosByName = {};
+var scene;
+var objeto = {};
+var countF = 0;
+var countC = 0;
+var programInfo;
 
+function makeNode(nodeDescription) {
+  var trs = new TRS();
+  var node = new Node(trs);
+  nodeInfosByName[nodeDescription.name] = {
+    trs: trs,
+    node: node,
+  };
+  trs.translation = nodeDescription.translation || trs.translation;
+  if (nodeDescription.draw !== false) {
+    node.drawInfo = {
+      uniforms: {
+        u_colorOffset: [0.2, 0.95, 0.2, 0],
+        u_colorMult: [0.4, 0.4, 0.4, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: cubeBufferInfo,
+      vertexArray: cubeVAO,
+    };
+    objectsToDraw.push(node.drawInfo);
+    objects.push(node);
+  }
+  makeNodes(nodeDescription.children).forEach(function (child) {
+    child.setParent(node);
+  });
+  return node;
+}
+
+function makeNodes(nodeDescriptions) {
+  return nodeDescriptions ? nodeDescriptions.map(makeNode) : [];
+}
 function main() {
   // Get A WebGL context
   /** @type {HTMLCanvasElement} */
@@ -139,10 +188,38 @@ function main() {
   // normal with a_normal etc..
   twgl.setAttributePrefix("a_");
 
-  cubeBufferInfo = flattenedPrimitives.createCubeBufferInfo(gl, 1);
+  //cubeBufferInfo = flattenedPrimitives.createCubeBufferInfo(gl, 1);
+  var arrays = {
+    position: new Float32Array([
+      -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1,
+
+      -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1, -1,
+
+      -1, 1, -1, -1, 1, 1, 1, 1, 1, 1, 1, -1,
+
+      -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1,
+
+      1, -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1,
+
+      -1, -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1,
+    ]),
+    indices: new Uint16Array([
+      0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12,
+      14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23,
+    ]),
+    colors: new Uint16Array([
+      1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1,
+      1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1,
+      0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0, 1, 1,
+      1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0,
+      0, 1, 1,
+    ]),
+  };
+
+  cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
 
   // setup GLSL program
-  var programInfo = twgl.createProgramInfo(gl, [vs, fs]);
+  programInfo = twgl.createProgramInfo(gl, [vs, fs]);
 
   cubeVAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
 
@@ -152,164 +229,18 @@ function main() {
 
   var fieldOfViewRadians = degToRad(60);
 
-  var objectsToDraw = [];
-  var objects = [];
-  var nodeInfosByName = {};
+  objectsToDraw = [];
+  objects = [];
+  nodeInfosByName = {};
 
   // Let's make all the nodes
-  var blockGuyNodeDescriptions = {
-    name: "point between feet",
-    draw: false,
-    children: [
-      {
-        name: "waist",
-        translation: [0, 3, 0],
-        children: [
-          {
-            name: "torso",
-            translation: [0, 1, 0],
-            children: [
-              {
-                name: "neck",
-                translation: [0, 0, 1],
-                children: [
-                  {
-                    name: "head",
-                    translation: [0, 0, 1],
-                    children: [
-                      {
-                        name: "hat1",
-                        translation: [0, 1, 0],
-                      },
-                      {
-                        name: "hat2",
-                        translation: [0, 1, 0],
-                      },
-                    ],
-                  },
-                ],
-              },
-              {
-                name: "left-arm",
-                translation: [-1, 0, 0],
-                children: [
-                  {
-                    name: "left-forearm",
-                    translation: [-1, 0, 0],
-                    children: [
-                      {
-                        name: "left-hand",
-                        translation: [-1, 0, 0],
-                        children: [
-                          {
-                            name: "left-hand-plus",
-                            translation: [-1, 0, 0],
-                            children: [
-                              {
-                                name: "left-hand-plus-plus",
-                                translation: [-1, 0, 0],
-                                children: [
-                                  {
-                                    name: "left-hand-plus-plus-plus",
-                                    translation: [-1, 0, 0],
-                                    children: [
-                                      {
-                                        name: "left-hand-plus-plus-plus-plus",
-                                        translation: [-1, 0, 0],
-                                      },
-                                    ],
-                                  },
-                                ],
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                ],
-              },
-              {
-                name: "right-arm",
-                translation: [1, 0, 0],
-                children: [
-                  {
-                    name: "right-forearm",
-                    translation: [1, 0, 0],
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            name: "left-leg",
-            translation: [-1, -1, 0],
-            children: [
-              {
-                name: "left-calf",
-                translation: [0, -1, 0],
-                children: [
-                  {
-                    name: "left-foot",
-                    translation: [0, 2, 0],
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            name: "right-leg",
-            translation: [1, -1, 0],
-            children: [
-              {
-                name: "right-calf",
-                translation: [0, -1, 0],
-                children: [
-                  {
-                    name: "right-foot",
-                    translation: [0, 2, 0],
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-    ],
+  objeto = {
+    name: "cubo0",
+    translation: [0, 0, 0],
+    children: [],
   };
 
-  function makeNode(nodeDescription) {
-    var trs = new TRS();
-    var node = new Node(trs);
-    nodeInfosByName[nodeDescription.name] = {
-      trs: trs,
-      node: node,
-    };
-    trs.translation = nodeDescription.translation || trs.translation;
-    if (nodeDescription.draw !== false) {
-      node.drawInfo = {
-        uniforms: {
-          u_colorOffset: [0, 0, 0.6, 0],
-          u_colorMult: [0.4, 0.4, 0.4, 1],
-        },
-        programInfo: programInfo,
-        bufferInfo: cubeBufferInfo,
-        vertexArray: cubeVAO,
-      };
-      objectsToDraw.push(node.drawInfo);
-      objects.push(node);
-    }
-    makeNodes(nodeDescription.children).forEach(function (child) {
-      child.setParent(node);
-    });
-    return node;
-  }
-
-  function makeNodes(nodeDescriptions) {
-    return nodeDescriptions ? nodeDescriptions.map(makeNode) : [];
-  }
-
-  var scene = makeNode(blockGuyNodeDescriptions);
+  scene = makeNode(objeto);
 
   requestAnimationFrame(drawScene);
 
@@ -343,46 +274,9 @@ function main() {
     var adjust;
     var speed = 3;
     var c = time * speed;
-    adjust = Math.abs(Math.sin(c));
-    nodeInfosByName["point between feet"].trs.translation[1] = adjust;
-    adjust = Math.sin(c);
-    nodeInfosByName["left-leg"].trs.rotation[0] = adjust;
-    nodeInfosByName["right-leg"].trs.rotation[0] = -adjust;
-    adjust = Math.sin(c + 0.1) * 0.4;
-    nodeInfosByName["left-calf"].trs.rotation[0] = -adjust;
-    nodeInfosByName["right-calf"].trs.rotation[0] = adjust;
-    adjust = Math.sin(c + 0.1) * 0.4;
-    nodeInfosByName["left-foot"].trs.rotation[0] = -adjust;
-    nodeInfosByName["right-foot"].trs.rotation[0] = adjust;
 
-    adjust = Math.sin(c) * 0.4;
-    nodeInfosByName["left-arm"].trs.rotation[2] = adjust;
-    nodeInfosByName["right-arm"].trs.rotation[2] = adjust;
-    adjust = Math.sin(c + 0.1) * 0.4;
-    nodeInfosByName["left-forearm"].trs.rotation[2] = adjust;
-    nodeInfosByName["right-forearm"].trs.rotation[2] = adjust;
-    adjust = Math.sin(c - 0.1) * 0.4;
-    nodeInfosByName["left-hand"].trs.rotation[2] = adjust;
-    nodeInfosByName["left-hand-plus"].trs.rotation[2] = adjust;
-    nodeInfosByName["left-hand-plus-plus"].trs.rotation[2] = adjust;
-    nodeInfosByName["left-hand-plus-plus-plus"].trs.rotation[2] = adjust;
-    nodeInfosByName["left-hand-plus-plus-plus-plus"].trs.rotation[2] = adjust;
-
-    adjust = Math.sin(c) * 0.4;
-    nodeInfosByName["waist"].trs.rotation[1] = adjust;
-    adjust = Math.sin(c) * 0.4;
-    nodeInfosByName["torso"].trs.rotation[1] = adjust;
-    adjust = Math.sin(c + 0.25) * 0.4;
-    nodeInfosByName["neck"].trs.rotation[1] = adjust;
-    adjust = Math.sin(c + 0.5) * 0.4;
-    nodeInfosByName["head"].trs.rotation[1] = adjust;
-    nodeInfosByName["hat1"].trs.rotation[1] = adjust;
-    nodeInfosByName["hat1"].trs.scale = [1.66, 0.15, 1.66];
-    nodeInfosByName["hat2"].trs.scale = [0.7, 0.5, 0.7];
-    nodeInfosByName["hat2"].trs.translation = [0, 1.25, 0];
-    adjust = Math.cos(c * 2) * 0.4;
-    nodeInfosByName["head"].trs.rotation[0] = adjust;
-
+    adjust = degToRad(time * config.rotation);
+    nodeInfosByName["cubo0"].trs.rotation[0] = adjust;
     // Update all world matrices in the scene graph
     scene.updateWorldMatrix();
 
