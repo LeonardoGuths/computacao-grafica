@@ -34,6 +34,54 @@ void main() {
 }
 `;
 
+var vsW = `
+#version 300 es
+	attribute vec2 a_position;
+  attribute vec3 a_barycentric;
+  uniform mat3 u_matrix;
+  varying vec3 vbc;
+
+void main() {
+  vbc = a_barycentric;
+  gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
+}
+`;
+
+var fsW = `#version 300 es
+		precision mediump float;
+		in vec3 vBaryCoord;
+
+		out vec4 outColor;
+
+		float edgeFactor(){
+		    vec3 d = fwidth(vBaryCoord);
+		    vec3 a3 = smoothstep(vec3(0.0), d*1.5, vBaryCoord);
+		    return min(min(a3.x, a3.y), a3.z);
+		}
+
+		const float uLineWidth = 0.005;
+		const float uFeather = 0.003;
+		const vec4 uLineColor = vec4(0.0,0.0,0.0,1.0);
+		const vec4 uFaceColor = vec4(0.5,0.5,0.5,0.8);
+
+		void main(void){
+			/*Simple idea of how to color the border*/
+			if(any(lessThan(vBaryCoord, vec3(0.01)))){
+			    outColor = uLineColor;
+			}else{
+			    outColor = uFaceColor;
+			}
+			
+			//Set line width that always stays the same no matter the zoom.
+			//outColor = mix(uLineColor, uFaceColor, edgeFactor());
+
+			//How to set width and feathing, gets bigger/smaller based on zoom.
+			//vec3 bcMix = smoothstep(vec3(uLineWidth),vec3(uLineWidth + uFeather),vBaryCoord);
+			//float cmix = min(min(bcMix.x, bcMix.y), bcMix.z);
+			//outColor = mix(uLineColor, uFaceColor, cmix);
+		}
+`;
+
 const degToRad = (d) => (d * Math.PI) / 180;
 
 const radToDeg = (r) => (r * 180) / Math.PI;
@@ -42,11 +90,16 @@ var config = {
   rotate: degToRad(20),
   x: 0,
   y: 0,
+  z: 0,
+  scaleX: 1,
+  scaleY: 1,
+  scaleZ: 1,
   rotation: 0,
+  anim: false,
   addCaixa: function () {
     countC++;
 
-    objeto.children.push({
+    objetoCubo.children.push({
       name: `cubo${countC}`,
       translation: [0, countC, 0],
     });
@@ -54,17 +107,39 @@ var config = {
     objectsToDraw = [];
     objects = [];
     nodeInfosByName = {};
-    scene = makeNode(objeto);
+    scene = makeNode(objetoCubo);
+    // scene = makeNode(objetoPiramide);
   },
+  // addPiramide: function () {
+  //   countP++;
+
+  //   objetoPiramide.children.push({
+  //     name: `piramide${countP}`,
+  //     translation: [0, countP, 0],
+  //   });
+
+  //   objectsToDraw = [];
+  //   objects = [];
+  //   nodeInfosByName = {};
+  //   scene = makeNode(objetoCubo);
+  //   scene = makeNode(objetoPiramide);
+  // },
 };
 
 const loadGUI = () => {
   const gui = new dat.GUI();
   gui.add(config, "rotate", 0, 20, 0.5);
-  gui.add(config, "x", -150, 150, 5);
-  gui.add(config, "y", -100, 100, 5);
+  gui.add(config, "x", -10, 10, 0.5);
+  gui.add(config, "y", -10, 10, 0.5);
+  gui.add(config, "z", -10, 10, 0.5);
+  gui.add(config, "scaleX", 0, 10, 0.1);
+  gui.add(config, "scaleY", 0, 10, 0.1);
+  gui.add(config, "scaleZ", 0, 10, 0.1);
   gui.add(config, "rotation", -1000, 1000, 10);
+  gui.add(config, "anim");
   gui.add(config, "addCaixa");
+
+  // gui.add(config, "addPiramide");
 };
 
 var TRS = function () {
@@ -138,10 +213,16 @@ var objectsToDraw = [];
 var objects = [];
 var nodeInfosByName = {};
 var scene;
-var objeto = {};
+var objetoCubo = {};
+var objetoPiramide = {};
 var countF = 0;
 var countC = 0;
+var countP = 0;
 var programInfo;
+var animatex = 0;
+var voltarx = false;
+var animatey = 100;
+var voltary = true;
 
 function makeNode(nodeDescription) {
   var trs = new TRS();
@@ -189,7 +270,7 @@ function main() {
   twgl.setAttributePrefix("a_");
 
   //cubeBufferInfo = flattenedPrimitives.createCubeBufferInfo(gl, 1);
-  var arrays = {
+  var cubeArrays = {
     position: new Float32Array([
       -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1,
 
@@ -207,19 +288,14 @@ function main() {
       0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12,
       14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23,
     ]),
-    colors: new Uint16Array([
-      1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1,
-      1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1,
-      0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0, 1, 1,
-      1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0,
-      0, 1, 1,
-    ]),
   };
 
-  cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
+  cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, cubeArrays);
+  // cubeBufferInfo = flattenedPrimitives.createCubeBufferInfo(gl, 1);
 
   // setup GLSL program
   programInfo = twgl.createProgramInfo(gl, [vs, fs]);
+  // programInfo = twgl.createProgramInfo(gl, [vsW, fsW]);
 
   cubeVAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
 
@@ -234,13 +310,59 @@ function main() {
   nodeInfosByName = {};
 
   // Let's make all the nodes
-  objeto = {
+  objetoCubo = {
     name: "cubo0",
-    translation: [0, 0, 0],
+    translation: [-5, 0, 0],
     children: [],
   };
 
-  scene = makeNode(objeto);
+  scene = makeNode(objetoCubo);
+
+  // var pyramidArrays = {
+  //   position: new Float32Array([
+  //     0, 1, 0,
+
+  //     -1, -1, 1,
+
+  //     1, -1, 1,
+
+  //     0, 1, 0,
+
+  //     1, -1, 1,
+
+  //     1, -1, -1,
+
+  //     0, 1, 0,
+
+  //     1, -1, -1,
+
+  //     -1, -1, -1,
+
+  //     0, 1, 0,
+
+  //     -1, -1, -1,
+
+  //     -1, -1, 1,
+  //   ]),
+  //   indices: new Uint16Array([
+  //     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 8, 4, 1, 8, 5, 2,
+  //   ]),
+  // };
+
+  // cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, pyramidArrays);
+
+  // // setup GLSL program
+  // programInfo = twgl.createProgramInfo(gl, [vs, fs]);
+
+  // cubeVAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
+
+  // objetoPiramide = {
+  //   name: "piramide0",
+  //   translation: [5, 0, 0],
+  //   children: [],
+  // };
+
+  // scene = makeNode(objetoPiramide);
 
   requestAnimationFrame(drawScene);
 
@@ -253,7 +375,7 @@ function main() {
     // Tell WebGL how to convert from clip space to pixels
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-    gl.enable(gl.CULL_FACE);
+    // gl.enable(gl.CULL_FACE);
     gl.enable(gl.DEPTH_TEST);
 
     // Compute the projection matrix
@@ -261,7 +383,7 @@ function main() {
     var projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, 1, 200);
 
     // Compute the camera's matrix using look at.
-    var cameraPosition = [4, 3.5, 10];
+    var cameraPosition = [4, 3.5, 15];
     var target = [0, 3.5, 0];
     var up = [0, 1, 0];
     var cameraMatrix = m4.lookAt(cameraPosition, target, up);
@@ -274,9 +396,49 @@ function main() {
     var adjust;
     var speed = 3;
     var c = time * speed;
+    var animatespeed = 0.1;
 
     adjust = degToRad(time * config.rotation);
     nodeInfosByName["cubo0"].trs.rotation[0] = adjust;
+    nodeInfosByName["cubo0"].trs.translation = [config.x, config.y, config.z];
+    nodeInfosByName["cubo0"].trs.scale = [
+      config.scaleX,
+      config.scaleY,
+      config.scaleZ,
+    ];
+
+    if (config.anim) {
+      nodeInfosByName["cubo0"].trs.translation = [
+        animatex * animatespeed + config.x,
+        animatey * animatespeed + config.y,
+        0 + config.z,
+      ];
+      // if (config.anim) {
+      //   nodeInfosByName["cubo0"].trs.translation = [
+      //     animatex * animatespeed,
+      //     animatey * animatespeed,
+      //     0 + config.z,
+      //   ];
+
+      if (animatex >= -100 && !voltarx) {
+        animatex++;
+        if (animatex == 100) voltarx = true;
+      } else {
+        animatex--;
+        if (animatex == -100) voltarx = false;
+      }
+
+      if (animatey >= -100 && !voltary) {
+        animatey++;
+        if (animatey == 100) voltary = true;
+      } else {
+        animatey--;
+        if (animatey == -100) voltary = false;
+      }
+      console.log("aX: " + animatex);
+      console.log("aY: " + animatey);
+    }
+
     // Update all world matrices in the scene graph
     scene.updateWorldMatrix();
 
