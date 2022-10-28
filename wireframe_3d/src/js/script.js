@@ -259,6 +259,9 @@ var config = {
     nodeInfosByName = {};
     scene = makeNode(objeto);
   },
+  camera_1: false,
+  camera_2: false,
+  camera_3: false,
 };
 
 var folder_vertice;
@@ -287,6 +290,28 @@ const loadGUI = () => {
   folder_matrix.add(config, "spin_y", -1000, 1000, 2);
 
   gui.add(config, "addCaixa");
+
+  folder_camera
+    .add(config, "camera_1")
+    .listen()
+    .onChange(function () {
+      config.camera_2 = false;
+      config.camera_3 = false;
+    });
+  folder_camera
+    .add(config, "camera_2")
+    .listen()
+    .onChange(function () {
+      config.camera_1 = false;
+      config.camera_3 = false;
+    });
+  folder_camera
+    .add(config, "camera_3")
+    .listen()
+    .onChange(function () {
+      config.camera_1 = false;
+      config.camera_2 = false;
+    });
   folder_camera.add(config, "camera_x", -200, 200, 1);
   folder_camera.add(config, "camera_y", -200, 200, 1);
   folder_camera.add(config, "camera_z", -200, 200, 1);
@@ -412,6 +437,9 @@ var fieldOfViewRadians;
 var cameraPosition;
 var target;
 var up;
+var cam1 = false;
+var cam2 = false;
+var cam3 = false;
 
 function makeNode(nodeDescription) {
   var trs = new TRS();
@@ -647,6 +675,7 @@ function main() {
 
   // Draw the scene.
 }
+cameraPosition = [config.camera_x, config.camera_y, config.camera_z];
 function drawScene(time) {
   time *= 0.001;
   teste = time;
@@ -664,7 +693,45 @@ function drawScene(time) {
   var projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, 1, 200);
 
   // Compute the camera's matrix using look at.
-  cameraPosition = [config.camera_x, config.camera_y, config.camera_z];
+  //cameraPosition = [config.camera_x, config.camera_y, config.camera_z];
+  if (!config.camera_1 && !config.camera_2 && !config.camera_3) {
+    if (cameraPosition[0] > config.camera_x) cameraPosition[0] -= 1;
+    if (cameraPosition[0] < config.camera_x) cameraPosition[0] += 1;
+
+    if (cameraPosition[1] > config.camera_y) cameraPosition[1] -= 1;
+    if (cameraPosition[1] < config.camera_y) cameraPosition[1] += 1;
+
+    if (cameraPosition[2] > config.camera_z) cameraPosition[2] -= 1;
+    if (cameraPosition[2] < config.camera_z) cameraPosition[2] += 1;
+  } else if (config.camera_1) {
+    if (cameraPosition[0] > 4) cameraPosition[0] -= 0.5;
+    if (cameraPosition[0] < 4) cameraPosition[0] += 0.5;
+
+    if (cameraPosition[1] > 4) cameraPosition[1] -= 0.5;
+    if (cameraPosition[1] < 4) cameraPosition[1] += 0.5;
+
+    if (cameraPosition[2] > 10) cameraPosition[2] -= 0.5;
+    if (cameraPosition[2] < 10) cameraPosition[2] += 0.5;
+  } else if (config.camera_2) {
+    if (cameraPosition[0] > 10) cameraPosition[0] -= 0.5;
+    if (cameraPosition[0] < 10) cameraPosition[0] += 0.5;
+
+    if (cameraPosition[1] > 10) cameraPosition[1] -= 0.5;
+    if (cameraPosition[1] < 10) cameraPosition[1] += 0.5;
+
+    if (cameraPosition[2] > 13) cameraPosition[2] -= 0.5;
+    if (cameraPosition[2] < 13) cameraPosition[2] += 0.5;
+  } else if (config.camera_3) {
+    if (cameraPosition[0] > -2) cameraPosition[0] -= 0.5;
+    if (cameraPosition[0] < -2) cameraPosition[0] += 0.5;
+
+    if (cameraPosition[1] > -2) cameraPosition[1] -= 0.5;
+    if (cameraPosition[1] < -2) cameraPosition[1] += 0.5;
+
+    if (cameraPosition[2] > 5) cameraPosition[2] -= 0.5;
+    if (cameraPosition[2] < 5) cameraPosition[2] += 0.5;
+  }
+
   target = [config.target, 0, 0];
   up = [0, 1, 0];
   var cameraMatrix = m4.lookAt(cameraPosition, target, up);
@@ -683,6 +750,17 @@ function drawScene(time) {
   adjust = degToRad(time * config.spin_y);
   nodeInfosByName["cubo0"].trs.rotation[1] = adjust;
   nodeInfosByName["cubo0"].trs.translation = [config.x, config.y, config.z];
+
+  if (cam1) {
+    if (cameraPosition[0] > 4) cameraPosition[0] -= 0.5;
+    if (cameraPosition[0] < 4) cameraPosition[0] += 0.5;
+
+    if (cameraPosition[1] > 4) cameraPosition[1] -= 0.5;
+    if (cameraPosition[1] < 4) cameraPosition[1] += 0.5;
+
+    if (cameraPosition[2] > 10) cameraPosition[2] -= 0.5;
+    if (cameraPosition[2] < 10) cameraPosition[2] += 0.5;
+  }
 
   //nodeInfosByName["cubo0"].trs.rotation[0] = degToRad(config.rotate);
   // Update all world matrices in the scene graph
