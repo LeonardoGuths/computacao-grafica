@@ -437,9 +437,6 @@ var fieldOfViewRadians;
 var cameraPosition;
 var target;
 var up;
-var cam1 = false;
-var cam2 = false;
-var cam3 = false;
 
 function makeNode(nodeDescription) {
   var trs = new TRS();
@@ -750,17 +747,6 @@ function drawScene(time) {
   adjust = degToRad(time * config.spin_y);
   nodeInfosByName["cubo0"].trs.rotation[1] = adjust;
   nodeInfosByName["cubo0"].trs.translation = [config.x, config.y, config.z];
-
-  if (cam1) {
-    if (cameraPosition[0] > 4) cameraPosition[0] -= 0.5;
-    if (cameraPosition[0] < 4) cameraPosition[0] += 0.5;
-
-    if (cameraPosition[1] > 4) cameraPosition[1] -= 0.5;
-    if (cameraPosition[1] < 4) cameraPosition[1] += 0.5;
-
-    if (cameraPosition[2] > 10) cameraPosition[2] -= 0.5;
-    if (cameraPosition[2] < 10) cameraPosition[2] += 0.5;
-  }
 
   //nodeInfosByName["cubo0"].trs.rotation[0] = degToRad(config.rotate);
   // Update all world matrices in the scene graph
