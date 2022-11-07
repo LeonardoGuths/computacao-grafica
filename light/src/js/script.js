@@ -35,7 +35,7 @@ var palette = {
   corSpec: [255, 255, 255], // RGB array
 };
 var tex;
-var listTex = ["rochosa", "nitro", "isopor", "madeira", "areia"];
+var listTex = ["rochosa", "nitro", "gelo", "madeira", "areia"];
 var selectedCamera = 0;
 var deltaTime = 0;
 var then;
@@ -123,8 +123,8 @@ function main() {
     areia: {
       src: "http://127.0.0.1:5500/light/texture/areia.jpg",
     },
-    isopor: {
-      src: "http://127.0.0.1:5500/light/texture/isopor.jpg  ",
+    gelo: {
+      src: "http://127.0.0.1:5500/light/texture/gelo.jpg  ",
     },
     madeira: {
       src: "http://127.0.0.1:5500/light/texture/madeira.jpg",
