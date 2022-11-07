@@ -80,6 +80,13 @@ var c;
 var fieldOfViewRadians;
 var reverseLightDirectionLocation;
 var temp;
+var listOfVertices = [];
+var palette = {
+  color1: "#FF0000", // CSS string
+  corLuz: [255, 0, 255], // RGB array
+  corCubo: [255, 0, 0, 1], // RGB with alpha
+  color4: { h: 350, s: 0.9, v: 0.3 }, // Hue, saturation, value
+};
 
 //CAMERA VARIABLES
 var cameraPosition;
@@ -94,10 +101,11 @@ function makeNode(nodeDescription) {
     node: node,
   };
   trs.translation = nodeDescription.translation || trs.translation;
+  trs.rotation = nodeDescription.rotation || trs.rotation;
   if (nodeDescription.draw !== false) {
     node.drawInfo = {
       uniforms: {
-        u_color: [0.2, 1, 0.2, 1],
+        u_color: [0.4, 0.4, 0.4, 1],
       },
       programInfo: programInfo,
       bufferInfo: cubeBufferInfo,
@@ -106,12 +114,11 @@ function makeNode(nodeDescription) {
 
     objectsToDraw.push(node.drawInfo);
     objects.push(node);
-
-    makeNodes(nodeDescription.children).forEach(function (child) {
-      child.setParent(node);
-    });
-    return node;
   }
+  makeNodes(nodeDescription.children).forEach(function (child) {
+    child.setParent(node);
+  });
+  return node;
 }
 
 function makeNodes(nodeDescriptions) {
@@ -126,7 +133,7 @@ function main() {
     return;
   }
 
-  loadGUI(gl);
+  // loadGUI(gl);
 
   // Tell the twgl to match position with a_position, n
   // normal with a_normal etc..
@@ -160,10 +167,6 @@ function main() {
   // normalSemIndice;
   // As posicoes do arrays_cube tao erradas, sem o CULL_FACES e sem os indices ta ruim
 
-  cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
-
-  // console.log(calculaMeioDoTrianguloIndices([0, 3, 2]));
-  // console.log(arrays_pyramid.position[0 * 3 + 1]);
   // console.log("a");
   // Dado um array como:
   //   var arrays = {
@@ -183,8 +186,8 @@ function main() {
   //     texcoord: { buffer: WebGLBuffer, numComponents: 2, },
   //   },
   // };
-  //console.log(cubeBufferInfo);
-  //console.log(arrays_cube.indices.length);
+
+  cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
 
   // setup GLSL program
 
@@ -192,6 +195,8 @@ function main() {
   //console.log(programInfo);
 
   VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
+
+  listOfVertices = arrays_pyramid.indices;
 
   function degToRad(d) {
     return (d * Math.PI) / 180;
@@ -205,27 +210,86 @@ function main() {
 
   // Let's make all the nodes
   objeto = {
-    name: "cubo0",
-    translation: [0, 0, 0],
-    children: [],
+    name: "Center of the world",
+    draw: false,
+    children: [
+      {
+        name: "cubo0",
+        draw: true,
+        translation: [0, 0, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        //bufferInfo: cubeBufferInfo,
+        //vertexArray: cubeVAO,
+        children: [
+          {
+            name: "cuboVertice0",
+            draw: true,
+            translation: [0, 0, 0],
+            rotation: [degToRad(0), degToRad(0), degToRad(0)],
+            children: [],
+          },
+        ],
+      },
+      {
+        name: "light",
+        draw: true,
+        translation: [config.luzx, config.luzy, config.luzz],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+      },
+      {
+        name: "cam1",
+        draw: true,
+        translation: [cam1Position[0], cam1Position[1], cam1Position[2]],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+      },
+      {
+        name: "cam2",
+        draw: true,
+        translation: [cam2Position[0], cam2Position[1], cam2Position[2]],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+      },
+      {
+        name: "cam3",
+        draw: true,
+        translation: [cam3Position[0], cam3Position[1], cam3Position[2]],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+      },
+    ],
   };
-  //console.log(programInfo);
+  console.log(objeto);
   scene = makeNode(objeto);
   //temp = mapAllVertices(arrays_pyramid.position, arrays_pyramid.indices);
   console.log(mapAllVertices(arrays_pyramid.position, arrays_pyramid.indices));
+
+  cameraPosition = [config.camera_x, config.camera_y, config.camera_z];
+
+  const temp = arrays_pyramid.position.slice(
+    config.vertice * 3,
+    config.vertice * 3 + 3
+  );
+
+  config.vx = temp[0];
+  config.vy = temp[1];
+  config.vz = temp[2];
 
   requestAnimationFrame(drawScene);
   //console.log(programInfo);
   // Draw the scene.
 }
 
-cameraPosition = [config.camera_x, config.camera_y, config.camera_z];
-
 function drawScene(time) {
   time *= 0.001;
   teste = time;
   config.time = config.time;
   twgl.resizeCanvasToDisplaySize(gl.canvas);
+
+  listOfVertices = arrays_pyramid.indices;
+
+  if (gui == null) loadGUI(gl);
 
   // Tell WebGL how to convert from clip space to pixels
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -249,34 +313,33 @@ function drawScene(time) {
     if (cameraPosition[2] > config.camera_z) cameraPosition[2] -= 1;
     if (cameraPosition[2] < config.camera_z) cameraPosition[2] += 1;
   } else if (config.camera_1) {
-    if (cameraPosition[0] > 4) cameraPosition[0] -= 0.5;
-    if (cameraPosition[0] < 4) cameraPosition[0] += 0.5;
+    if (cameraPosition[0] > cam1Position[0]) cameraPosition[0] -= 0.5;
+    if (cameraPosition[0] < cam1Position[0]) cameraPosition[0] += 0.5;
 
-    if (cameraPosition[1] > 4) cameraPosition[1] -= 0.5;
-    if (cameraPosition[1] < 4) cameraPosition[1] += 0.5;
+    if (cameraPosition[1] > cam1Position[1]) cameraPosition[1] -= 0.5;
+    if (cameraPosition[1] < cam1Position[1]) cameraPosition[1] += 0.5;
 
-    if (cameraPosition[2] > 10) cameraPosition[2] -= 0.5;
-    if (cameraPosition[2] < 10) cameraPosition[2] += 0.5;
+    if (cameraPosition[2] > cam1Position[2]) cameraPosition[2] -= 0.5;
+    if (cameraPosition[2] < cam1Position[2]) cameraPosition[2] += 0.5;
   } else if (config.camera_2) {
-    if (cameraPosition[0] > 10) cameraPosition[0] -= 0.5;
-    if (cameraPosition[0] < 10) cameraPosition[0] += 0.5;
+    if (cameraPosition[0] > cam2Position[0]) cameraPosition[0] -= 0.5;
+    if (cameraPosition[0] < cam2Position[0]) cameraPosition[0] += 0.5;
 
-    if (cameraPosition[1] > 10) cameraPosition[1] -= 0.5;
-    if (cameraPosition[1] < 10) cameraPosition[1] += 0.5;
+    if (cameraPosition[1] > cam2Position[1]) cameraPosition[1] -= 0.5;
+    if (cameraPosition[1] < cam2Position[1]) cameraPosition[1] += 0.5;
 
-    if (cameraPosition[2] > 13) cameraPosition[2] -= 0.5;
-    if (cameraPosition[2] < 13) cameraPosition[2] += 0.5;
+    if (cameraPosition[2] > cam2Position[2]) cameraPosition[2] -= 0.5;
+    if (cameraPosition[2] < cam2Position[2]) cameraPosition[2] += 0.5;
   } else if (config.camera_3) {
-    if (cameraPosition[0] > -2) cameraPosition[0] -= 0.5;
-    if (cameraPosition[0] < -2) cameraPosition[0] += 0.5;
+    if (cameraPosition[0] > cam3Position[0]) cameraPosition[0] -= 0.5;
+    if (cameraPosition[0] < cam3Position[0]) cameraPosition[0] += 0.5;
 
-    if (cameraPosition[1] > -2) cameraPosition[1] -= 0.5;
-    if (cameraPosition[1] < -2) cameraPosition[1] += 0.5;
+    if (cameraPosition[1] > cam3Position[1]) cameraPosition[1] -= 0.5;
+    if (cameraPosition[1] < cam3Position[1]) cameraPosition[1] += 0.5;
 
-    if (cameraPosition[2] > 5) cameraPosition[2] -= 0.5;
-    if (cameraPosition[2] < 5) cameraPosition[2] += 0.5;
+    if (cameraPosition[2] > cam3Position[2]) cameraPosition[2] -= 0.5;
+    if (cameraPosition[2] < cam3Position[2]) cameraPosition[2] += 0.5;
   }
-
   target = [config.target, 0, 0];
   up = [0, 1, 0];
   cameraMatrix = m4.lookAt(cameraPosition, target, up);
@@ -290,22 +353,18 @@ function drawScene(time) {
 
   adjust;
   speed = 3;
-  c = time * speed;
+  //console.log(nodeInfosByName);
+  computeMatrix(nodeInfosByName["cubo0"], config);
+  computeMatrixLuz(nodeInfosByName["light"], config);
+  computeMatrixCuboVertice(nodeInfosByName["cuboVertice0"], config);
 
-  // adjust = degToRad(time * config.spin_x);
-  adjust = degToRad(config.spin_x);
-
-  nodeInfosByName["cubo0"].trs.rotation[0] = adjust;
-  // adjust = degToRad(time * config.spin_y);
-  adjust = degToRad(config.spin_y);
-
-  nodeInfosByName["cubo0"].trs.rotation[1] = adjust;
-  nodeInfosByName["cubo0"].trs.translation = [config.x, config.y, config.z];
-  nodeInfosByName["cubo0"].trs.scale = [
-    config.scalex,
-    config.scaley,
-    config.scalez,
-  ];
+  nodeInfosByName["cam1"].trs.translation = cam1Position;
+  nodeInfosByName["cam2"].trs.translation = cam2Position;
+  nodeInfosByName["cam3"].trs.translation = cam3Position;
+  nodeInfosByName["cam1"].trs.scale = [0.1, 0.1, 0.1];
+  nodeInfosByName["cam2"].trs.scale = [0.1, 0.1, 0.1];
+  nodeInfosByName["cam3"].trs.scale = [0.1, 0.1, 0.1];
+  //nodeInfosByName
 
   //nodeInfosByName["cubo0"].trs.rotation[0] = degToRad(config.rotate);
   // Update all world matrices in the scene graph
@@ -318,15 +377,26 @@ function drawScene(time) {
       object.worldMatrix
     );
     object.drawInfo.uniforms.u_lightWorldPosition = [
-      config.teste0,
-      config.teste1,
-      config.teste2,
+      config.luzx,
+      config.luzy,
+      config.luzz,
     ];
 
-    object.drawInfo.uniforms.u_world = m4.multiply(
-      object.worldMatrix,
-      m4.yRotation(fRotationRadians)
-    );
+    object.drawInfo.uniforms.u_lightColor = [
+      convertToZeroOne(palette["corLuz"][0], 0, 255),
+      convertToZeroOne(palette["corLuz"][1], 0, 255),
+      convertToZeroOne(palette["corLuz"][2], 0, 255),
+    ];
+
+    object.drawInfo.uniforms.u_color = [
+      convertToZeroOne(palette["corCubo"][0], 0, 255),
+      convertToZeroOne(palette["corCubo"][1], 0, 255),
+      convertToZeroOne(palette["corCubo"][2], 0, 255),
+      palette["corCubo"][3],
+    ];
+    // console.log(object.drawInfo.uniforms.u_lightColor);
+    // console.log(object.drawInfo.uniforms.u_color);
+    object.drawInfo.uniforms.u_specularColor = [0.5, 1, 0.5];
 
     object.drawInfo.uniforms.u_worldInverseTranspose = m4.transpose(
       m4.inverse(object.worldMatrix)
@@ -336,43 +406,6 @@ function drawScene(time) {
 
     object.drawInfo.uniforms.u_shininess = config.shininess;
   });
-
-  // wireframe = false;
-  // programInfo = twgl.createProgramInfo(gl, [vs, fs]);
-
-  // VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
-
-  // objectsToDraw = [];
-  // objects = [];
-  // nodeInfosByName = {};
-  // scene = makeNode(objeto);
-  // scene.updateWorldMatrix();
-  // objects.forEach(function (object) {
-  //   object.drawInfo.uniforms.u_matrix = m4.multiply(
-  //     viewProjectionMatrix,
-  //     object.worldMatrix
-  //   );
-  // });
-  // //twgl.drawObjectList(gl, objectsToDraw);
-
-  // wireframe = true;
-  // programInfo = twgl.createProgramInfo(gl, [vsw, fsw]);
-
-  // VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
-
-  // //objectsToDraw = [];
-  // //objects = [];
-  // //nodeInfosByName = {};
-  // scene = makeNode(objeto);
-  // nodeInfosByName["cubo0"].trs.rotation[0] = adjust;
-  // scene.updateWorldMatrix();
-
-  // objects.forEach(function (object) {
-  //   object.drawInfo.uniforms.u_matrix = m4.multiply(
-  //     viewProjectionMatrix,
-  //     object.worldMatrix
-  //   );
-  // });
 
   // ------ Draw the objects --------
 

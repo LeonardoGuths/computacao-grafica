@@ -39,3 +39,28 @@ const mapAllVertices = (position, indices) => {
 
   return batata;
 };
+
+const computeMatrix = (matrix, config) => {
+  matrix.trs.translation = [config.x, config.y, config.z];
+  matrix.trs.rotation = [
+    degToRad(config.spin_x),
+    degToRad(config.spin_y),
+    degToRad(0),
+  ];
+  matrix.trs.scale = [config.scalex, config.scaley, config.scalez];
+};
+const computeMatrixLuz = (matrix, config) => {
+  matrix.trs.translation = [config.luzx, config.luzy, config.luzz];
+  matrix.trs.rotation = [degToRad(0), degToRad(0), degToRad(0)];
+  matrix.trs.scale = [0.05, 0.05, 0.05];
+};
+
+const computeMatrixCuboVertice = (matrix, config) => {
+  matrix.trs.translation = [config.vx, config.vy, config.vz];
+  matrix.trs.rotation = [degToRad(0), degToRad(0), degToRad(0)];
+  matrix.trs.scale = [0.1, 0.1, 0.1];
+};
+
+const convertToZeroOne = (old_value, old_min, old_max) => {
+  return (old_value - old_min) / (old_max - old_min);
+};
