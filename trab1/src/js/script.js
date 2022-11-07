@@ -115,19 +115,19 @@ function main() {
 
   tex = twgl.createTextures(gl, {
     rochosa: {
-      src: "http://127.0.0.1:5500/light/texture/rochosa.jpg",
+      src: "http://127.0.0.1:5500/trab1/texture/rochosa.jpg",
     },
     nitro: {
-      src: "http://127.0.0.1:5500/light/texture/nitro.png",
+      src: "http://127.0.0.1:5500/trab1/texture/nitro.png",
     },
     areia: {
-      src: "http://127.0.0.1:5500/light/texture/areia.jpg",
+      src: "http://127.0.0.1:5500/trab1/texture/areia.jpg",
     },
     gelo: {
-      src: "http://127.0.0.1:5500/light/texture/gelo.jpg  ",
+      src: "http://127.0.0.1:5500/trab1/texture/gelo.jpg  ",
     },
     madeira: {
-      src: "http://127.0.0.1:5500/light/texture/madeira.jpg",
+      src: "http://127.0.0.1:5500/trab1/texture/madeira.jpg",
     },
   });
   gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
