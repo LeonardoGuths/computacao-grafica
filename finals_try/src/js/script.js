@@ -1,5 +1,57 @@
 "use strict";
 
+const calculateBarycentric = (length) => {
+  const n = length / 9;
+  const barycentric = [];
+  for (let i = 0; i < n; i++) barycentric.push(1, 0, 0, 0, 1, 0, 0, 0, 1);
+  return new Float32Array(barycentric);
+};
+
+const degToRad = (d) => (d * Math.PI) / 180;
+
+const radToDeg = (r) => (r * 180) / Math.PI;
+
+const calculaMeioDoTriangulo = (arr) => {
+  const x = (arr[0] + arr[3] + arr[6]) / 3;
+  const y = (arr[1] + arr[4] + arr[7]) / 3;
+  const z = (arr[2] + arr[5] + arr[8]) / 3;
+
+  return [x, y, z];
+};
+
+const crossProduct = (a, b) => {
+  return [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0],
+  ];
+};
+
+const somaNormal = (v, n) => {
+  return [v[0] + n[0], v[1] + n[1], v[2] + n[2]];
+};
+
+const calculaMeioDoTrianguloIndices = (arr) => {
+  // arr contem os indices dos vertices q formam o triangulo que quero adicionar um vertice no meio
+  const x =
+    (arrays_pyramid.position[arr[0] * 3] +
+      arrays_pyramid.position[arr[1] * 3] +
+      arrays_pyramid.position[arr[2] * 3]) /
+    3;
+  const y =
+    (arrays_pyramid.position[arr[0] * 3 + 1] +
+      arrays_pyramid.position[arr[1] * 3 + 1] +
+      arrays_pyramid.position[arr[2] * 3 + 1]) /
+    3;
+  const z =
+    (arrays_pyramid.position[arr[0] * 3 + 2] +
+      arrays_pyramid.position[arr[1] * 3 + 2] +
+      arrays_pyramid.position[arr[2] * 3 + 2]) /
+    3;
+
+  return [x, y, z];
+};
+
 var teste = 1;
 var gui;
 var qtd_triangulos = 0;
@@ -26,34 +78,15 @@ var adjust;
 var speed;
 var c;
 var fieldOfViewRadians;
+var reverseLightDirectionLocation;
 var temp;
 var listOfVertices = [];
-var listOfLights = [0, 1, 2];
 var palette = {
-  corLuz: [255, 255, 255], // RGB array
-  corCubo: [255, 255, 255], // RGB array
-  corSpec: [255, 255, 255], // RGB array
+  color1: "#FF0000", // CSS string
+  corLuz: [255, 0, 255], // RGB array
+  corCubo: [255, 0, 0, 1], // RGB with alpha
+  color4: { h: 350, s: 0.9, v: 0.3 }, // Hue, saturation, value
 };
-var tex;
-var listTex = ["rochosa", "nitro", "isopor", "madeira", "areia"];
-var selectedCamera = 0;
-var deltaTime = 0;
-var then;
-var selectedObject = 0;
-var listOfObjects = [0];
-var index = 1;
-
-var arrLuz = [
-  new Luz([3, 0, 0], [255, 0, 0], [255, 255, 255], 300),
-  new Luz([0, 3, 0], [0, 255, 0], [255, 255, 255], 300),
-  new Luz([-0.5, -0.5, 3], [0, 0, 255], [255, 255, 255], 300),
-];
-
-let arrCameras = [
-  new Camera([10, 4, 0], [0, 0, 0], [0, 1, 0]),
-  new Camera([-5, 4, 0], [3.5, -23.5, 50.5], [0, 1, 0]),
-  new Camera([5, 4, 8], [0, 35, 0], [0, 1, 0]),
-];
 
 //CAMERA VARIABLES
 var cameraPosition;
@@ -66,30 +99,17 @@ function makeNode(nodeDescription) {
   nodeInfosByName[nodeDescription.name] = {
     trs: trs,
     node: node,
-    format: nodeDescription.format,
   };
   trs.translation = nodeDescription.translation || trs.translation;
   trs.rotation = nodeDescription.rotation || trs.rotation;
   if (nodeDescription.draw !== false) {
-    const bufferInfo = twgl.createBufferInfoFromArrays(
-      gl,
-      nodeDescription.format
-    );
-
-    const vertexArray = twgl.createVAOFromBufferInfo(
-      gl,
-      programInfo,
-      bufferInfo
-    );
     node.drawInfo = {
       uniforms: {
         u_color: [0.4, 0.4, 0.4, 1],
-        u_texture: nodeDescription.texture,
       },
-      format: nodeDescription.format,
       programInfo: programInfo,
-      bufferInfo: bufferInfo,
-      vertexArray: vertexArray,
+      bufferInfo: cubeBufferInfo,
+      vertexArray: VAO,
     };
 
     objectsToDraw.push(node.drawInfo);
@@ -113,26 +133,6 @@ function main() {
     return;
   }
 
-  tex = twgl.createTextures(gl, {
-    rochosa: {
-      src: "http://127.0.0.1:5500/light/texture/rochosa.jpg",
-    },
-    nitro: {
-      src: "http://127.0.0.1:5500/light/texture/nitro.png",
-    },
-    areia: {
-      src: "http://127.0.0.1:5500/light/texture/areia.jpg",
-    },
-    isopor: {
-      src: "http://127.0.0.1:5500/light/texture/isopor.jpg  ",
-    },
-    madeira: {
-      src: "http://127.0.0.1:5500/light/texture/madeira.jpg",
-    },
-  });
-  gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
-
   // loadGUI(gl);
 
   // Tell the twgl to match position with a_position, n
@@ -141,19 +141,17 @@ function main() {
 
   //cubeBufferInfo = flattenedPrimitives.createCubeBufferInfo(gl, 1);
   //console.log(arrays_cube5.position.reverse());
-  // var buf = [];
-  // for (let index = 0; index < arrays_cube5.position.length; index = index + 3) {
-  //   buf = [
-  //     arrays_cube5.position[index],
-  //     arrays_cube5.position[index + 1],
-  //     arrays_cube5.position[index + 2],
-  //     ...buf,
-  //   ];
-  // }
-  //console.log(`${buf}`);
-  arrays_pyramid = arrays_cube6;
-  // arrays_pyramid = pyramidFormat;
-
+  var buf = [];
+  for (let index = 0; index < arrays_cube5.position.length; index = index + 3) {
+    buf = [
+      arrays_cube5.position[index],
+      arrays_cube5.position[index + 1],
+      arrays_cube5.position[index + 2],
+      ...buf,
+    ];
+  }
+  console.log(`${buf}`);
+  arrays_pyramid = arrays_cube5;
   //arrays_pyramid.position = buf;
 
   arrays_pyramid.barycentric = calculateBarycentric(
@@ -164,9 +162,6 @@ function main() {
     arrays_pyramid.position,
     arrays_pyramid.indices
   );
-
-  console.log("normal");
-  console.log(arrays_pyramid.normal);
 
   // normalComIndice();
   // normalSemIndice;
@@ -196,7 +191,7 @@ function main() {
 
   // setup GLSL program
 
-  programInfo = twgl.createProgramInfo(gl, [vs3luz, fs3luz]);
+  programInfo = twgl.createProgramInfo(gl, [vs, fs]);
   //console.log(programInfo);
 
   VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
@@ -212,21 +207,17 @@ function main() {
   objectsToDraw = [];
   objects = [];
   nodeInfosByName = {};
-  const arrayCube = createArray("cube");
-  console.log(arrayCube);
+
   // Let's make all the nodes
   objeto = {
     name: "Center of the world",
     draw: false,
     children: [
       {
-        name: "0",
+        name: "cubo0",
         draw: true,
-        type: "cube",
         translation: [0, 0, 0],
         rotation: [degToRad(0), degToRad(0), degToRad(0)],
-        texture: tex.madeira,
-        format: arrayCube,
         //bufferInfo: cubeBufferInfo,
         //vertexArray: cubeVAO,
         children: [
@@ -235,71 +226,46 @@ function main() {
             draw: true,
             translation: [0, 0, 0],
             rotation: [degToRad(0), degToRad(0), degToRad(0)],
-            texture: tex.nitro,
-            format: arrayCube,
             children: [],
           },
         ],
+      },
+      {
+        name: "light",
+        draw: true,
+        translation: [config.luzx, config.luzy, config.luzz],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+      },
+      {
+        name: "cam1",
+        draw: true,
+        translation: [cam1Position[0], cam1Position[1], cam1Position[2]],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+      },
+      {
+        name: "cam2",
+        draw: true,
+        translation: [cam2Position[0], cam2Position[1], cam2Position[2]],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+      },
+      {
+        name: "cam3",
+        draw: true,
+        translation: [cam3Position[0], cam3Position[1], cam3Position[2]],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
       },
     ],
   };
   console.log(objeto);
   scene = makeNode(objeto);
-  console.log(objectsToDraw);
-
-  objects.forEach(function (object) {
-    object.drawInfo.uniforms.u_lightWorldPosition0 = [
-      arrLuz[0].position.x,
-      arrLuz[0].position.y,
-      arrLuz[0].position.z,
-    ];
-    object.drawInfo.uniforms.u_lightWorldPosition1 = [
-      arrLuz[1].position.x,
-      arrLuz[1].position.y,
-      arrLuz[1].position.z,
-    ];
-    object.drawInfo.uniforms.u_lightWorldPosition2 = [
-      arrLuz[2].position.x,
-      arrLuz[2].position.y,
-      arrLuz[2].position.z,
-    ];
-
-    object.drawInfo.uniforms.u_lightColor0 = [
-      convertToZeroOne(arrLuz[0].color[0], 0, 255),
-      convertToZeroOne(arrLuz[0].color[1], 0, 255),
-      convertToZeroOne(arrLuz[0].color[2], 0, 255),
-    ];
-    object.drawInfo.uniforms.u_lightColor1 = [
-      convertToZeroOne(arrLuz[1].color[0], 0, 255),
-      convertToZeroOne(arrLuz[1].color[1], 0, 255),
-      convertToZeroOne(arrLuz[1].color[2], 0, 255),
-    ];
-    object.drawInfo.uniforms.u_lightColor2 = [
-      convertToZeroOne(arrLuz[2].color[0], 0, 255),
-      convertToZeroOne(arrLuz[2].color[1], 0, 255),
-      convertToZeroOne(arrLuz[2].color[2], 0, 255),
-    ];
-
-    object.drawInfo.uniforms.u_specularColor0 = [
-      convertToZeroOne(arrLuz[0].spec[0], 0, 255),
-      convertToZeroOne(arrLuz[0].spec[1], 0, 255),
-      convertToZeroOne(arrLuz[0].spec[2], 0, 255),
-    ];
-    object.drawInfo.uniforms.u_specularColor1 = [
-      convertToZeroOne(arrLuz[1].spec[0], 0, 255),
-      convertToZeroOne(arrLuz[1].spec[1], 0, 255),
-      convertToZeroOne(arrLuz[1].spec[2], 0, 255),
-    ];
-    object.drawInfo.uniforms.u_specularColor2 = [
-      convertToZeroOne(arrLuz[2].spec[0], 0, 255),
-      convertToZeroOne(arrLuz[2].spec[1], 0, 255),
-      convertToZeroOne(arrLuz[2].spec[2], 0, 255),
-    ];
-  });
   //temp = mapAllVertices(arrays_pyramid.position, arrays_pyramid.indices);
-  //console.log(mapAllVertices(arrays_pyramid.position, arrays_pyramid.indices));
-  //cameraPosition = [4, 4, 10];
-  cameraPosition = arrCameras[0].cameraPosition;
+  console.log(mapAllVertices(arrays_pyramid.position, arrays_pyramid.indices));
+
+  cameraPosition = [config.camera_x, config.camera_y, config.camera_z];
 
   const temp = arrays_pyramid.position.slice(
     config.vertice * 3,
@@ -309,15 +275,16 @@ function main() {
   config.vx = temp[0];
   config.vy = temp[1];
   config.vz = temp[2];
-  //mapTexture();
+
   requestAnimationFrame(drawScene);
-  //console.log(objects);
+  //console.log(programInfo);
   // Draw the scene.
 }
-function drawScene(now) {
-  now *= 0.001;
-  deltaTime = now - then;
-  then = now;
+
+function drawScene(time) {
+  time *= 0.001;
+  teste = time;
+  config.time = config.time;
   twgl.resizeCanvasToDisplaySize(gl.canvas);
 
   listOfVertices = arrays_pyramid.indices;
@@ -335,6 +302,7 @@ function drawScene(now) {
   var projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, 1, 200);
 
   // Compute the camera's matrix using look at.
+  // cameraPosition = [config.camera_x, config.camera_y, config.camera_z];
   if (!config.camera_1 && !config.camera_2 && !config.camera_3) {
     if (cameraPosition[0] > config.camera_x) cameraPosition[0] -= 1;
     if (cameraPosition[0] < config.camera_x) cameraPosition[0] += 1;
@@ -372,13 +340,9 @@ function drawScene(now) {
     if (cameraPosition[2] > cam3Position[2]) cameraPosition[2] -= 0.5;
     if (cameraPosition[2] < cam3Position[2]) cameraPosition[2] += 0.5;
   }
-  //target = [config.targetx, config.targety, config.targetz];
-  //up = [0, 1, 0];
-  cameraMatrix = m4.lookAt(
-    arrCameras[selectedCamera].cameraPosition,
-    arrCameras[selectedCamera].target,
-    arrCameras[selectedCamera].up
-  );
+  target = [config.target, 0, 0];
+  up = [0, 1, 0];
+  cameraMatrix = m4.lookAt(cameraPosition, target, up);
 
   // Make a view matrix from the camera matrix.
   viewMatrix = m4.inverse(cameraMatrix);
@@ -389,19 +353,22 @@ function drawScene(now) {
 
   adjust;
   speed = 3;
-
   //console.log(nodeInfosByName);
-  computeMatrix(nodeInfosByName[`${selectedObject}`], config);
-  // computeMatrixLuz(nodeInfosByName["light1"], config);
-  // computeMatrixLuz2(nodeInfosByName["light2"], config);
-  //computeMatrixCuboVertice(nodeInfosByName["cuboVertice0"], config);
+  computeMatrix(nodeInfosByName["cubo0"], config);
+  computeMatrixLuz(nodeInfosByName["light"], config);
+  computeMatrixCuboVertice(nodeInfosByName["cuboVertice0"], config);
+
+  nodeInfosByName["cam1"].trs.translation = cam1Position;
+  nodeInfosByName["cam2"].trs.translation = cam2Position;
+  nodeInfosByName["cam3"].trs.translation = cam3Position;
+  nodeInfosByName["cam1"].trs.scale = [0.1, 0.1, 0.1];
+  nodeInfosByName["cam2"].trs.scale = [0.1, 0.1, 0.1];
+  nodeInfosByName["cam3"].trs.scale = [0.1, 0.1, 0.1];
   //nodeInfosByName
 
   //nodeInfosByName["cubo0"].trs.rotation[0] = degToRad(config.rotate);
   // Update all world matrices in the scene graph
   scene.updateWorldMatrix();
-  //console.log(arrLuz[0].position);
-  //console.log(cameraPosition);
 
   // Compute all the matrices for rendering
   objects.forEach(function (object) {
@@ -409,69 +376,27 @@ function drawScene(now) {
       viewProjectionMatrix,
       object.worldMatrix
     );
-    object.drawInfo.uniforms.u_lightWorldPosition0 = [
-      arrLuz[0].position.x,
-      arrLuz[0].position.y,
-      arrLuz[0].position.z,
-    ];
-    object.drawInfo.uniforms.u_lightWorldPosition1 = [
-      arrLuz[1].position.x,
-      arrLuz[1].position.y,
-      arrLuz[1].position.z,
-    ];
-    object.drawInfo.uniforms.u_lightWorldPosition2 = [
-      arrLuz[2].position.x,
-      arrLuz[2].position.y,
-      arrLuz[2].position.z,
+    object.drawInfo.uniforms.u_lightWorldPosition = [
+      config.luzx,
+      config.luzy,
+      config.luzz,
     ];
 
-    object.drawInfo.uniforms.u_lightColor0 = [
-      convertToZeroOne(arrLuz[0].color[0], 0, 255),
-      convertToZeroOne(arrLuz[0].color[1], 0, 255),
-      convertToZeroOne(arrLuz[0].color[2], 0, 255),
-    ];
-    object.drawInfo.uniforms.u_lightColor1 = [
-      convertToZeroOne(arrLuz[1].color[0], 0, 255),
-      convertToZeroOne(arrLuz[1].color[1], 0, 255),
-      convertToZeroOne(arrLuz[1].color[2], 0, 255),
-    ];
-    object.drawInfo.uniforms.u_lightColor2 = [
-      convertToZeroOne(arrLuz[2].color[0], 0, 255),
-      convertToZeroOne(arrLuz[2].color[1], 0, 255),
-      convertToZeroOne(arrLuz[2].color[2], 0, 255),
+    object.drawInfo.uniforms.u_lightColor = [
+      convertToZeroOne(palette["corLuz"][0], 0, 255),
+      convertToZeroOne(palette["corLuz"][1], 0, 255),
+      convertToZeroOne(palette["corLuz"][2], 0, 255),
     ];
 
     object.drawInfo.uniforms.u_color = [
       convertToZeroOne(palette["corCubo"][0], 0, 255),
       convertToZeroOne(palette["corCubo"][1], 0, 255),
       convertToZeroOne(palette["corCubo"][2], 0, 255),
-      1,
+      palette["corCubo"][3],
     ];
     // console.log(object.drawInfo.uniforms.u_lightColor);
     // console.log(object.drawInfo.uniforms.u_color);
-    object.drawInfo.uniforms.u_specularColor0 = [
-      convertToZeroOne(arrLuz[0].spec[0], 0, 255),
-      convertToZeroOne(arrLuz[0].spec[1], 0, 255),
-      convertToZeroOne(arrLuz[0].spec[2], 0, 255),
-    ];
-    object.drawInfo.uniforms.u_specularColor1 = [
-      convertToZeroOne(arrLuz[1].spec[0], 0, 255),
-      convertToZeroOne(arrLuz[1].spec[1], 0, 255),
-      convertToZeroOne(arrLuz[1].spec[2], 0, 255),
-    ];
-    object.drawInfo.uniforms.u_specularColor2 = [
-      convertToZeroOne(arrLuz[2].spec[0], 0, 255),
-      convertToZeroOne(arrLuz[2].spec[1], 0, 255),
-      convertToZeroOne(arrLuz[2].spec[2], 0, 255),
-    ];
-
-    object.drawInfo.uniforms.u_color = [
-      convertToZeroOne(palette["corCubo"][0], 0, 255),
-      convertToZeroOne(palette["corCubo"][1], 0, 255),
-      convertToZeroOne(palette["corCubo"][2], 0, 255),
-      1,
-    ];
-    object.drawInfo.uniforms.u_world = object.worldMatrix;
+    object.drawInfo.uniforms.u_specularColor = [0.5, 1, 0.5];
 
     object.drawInfo.uniforms.u_worldInverseTranspose = m4.transpose(
       m4.inverse(object.worldMatrix)
@@ -480,8 +405,6 @@ function drawScene(now) {
     object.drawInfo.uniforms.u_viewWorldPosition = cameraPosition;
 
     object.drawInfo.uniforms.u_shininess = config.shininess;
-
-    object.drawInfo.uniforms.u_texture = tex[config.textura];
   });
 
   // ------ Draw the objects --------
