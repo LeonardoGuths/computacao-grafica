@@ -276,11 +276,16 @@ const changeTexCoord = function () {
   // );
   // var temp = mapVertices[n];
 
-  arrays_pyramid.texcoord[n * 2] = config.coordu;
-  arrays_pyramid.texcoord[n * 2 + 1] = config.coordv;
+  nodeInfosByName[`${selectedObject}`].format.texcoord.data[n * 2] =
+    config.coordu;
+  nodeInfosByName[`${selectedObject}`].format.texcoord.data[n * 2 + 1] =
+    config.coordv;
 
-  cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
-
+  nodeInfosByName[`${selectedObject}`].node.drawInfo.bufferInfo =
+    twgl.createBufferInfoFromArrays(
+      gl,
+      nodeInfosByName[`${selectedObject}`].format
+    );
   objectsToDraw = [];
   objects = [];
   nodeInfosByName = {};
@@ -311,6 +316,9 @@ const createArray = (type) => {
   return newArray;
 };
 
+var ypos,
+  zpos = 0;
+
 function addCubo() {
   const updatedValues = objeto.children.map((item) => {
     let name = item.name;
@@ -329,10 +337,10 @@ function addCubo() {
     name: `${index}`,
     draw: true,
     type: "cube",
-    translation: [0, 0, 90],
+    translation: [0, 0, --zpos],
     rotation: [degToRad(0), degToRad(0), degToRad(0)],
     format: newArray,
-    texture: tex.madeira,
+    texture: tex.rochosa,
     children: [],
   });
   console.log(nodeInfosByName);

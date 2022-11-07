@@ -44,9 +44,9 @@ var listOfObjects = [0];
 var index = 1;
 
 var arrLuz = [
-  new Luz([3, 0, 0], [255, 0, 0], [255, 255, 255], 300),
+  new Luz([-0.5, -0.5, 3], [255, 255, 255], [255, 255, 255], 300),
   new Luz([0, 3, 0], [0, 255, 0], [255, 255, 255], 300),
-  new Luz([-0.5, -0.5, 3], [0, 0, 255], [255, 255, 255], 300),
+  new Luz([3, 0, 0], [0, 0, 255], [255, 255, 255], 300),
 ];
 
 let arrCameras = [
@@ -225,7 +225,7 @@ function main() {
         type: "cube",
         translation: [0, 0, 0],
         rotation: [degToRad(0), degToRad(0), degToRad(0)],
-        texture: tex.madeira,
+        texture: tex.rochosa,
         format: arrayCube,
         //bufferInfo: cubeBufferInfo,
         //vertexArray: cubeVAO,
@@ -235,11 +235,41 @@ function main() {
             draw: true,
             translation: [0, 0, 0],
             rotation: [degToRad(0), degToRad(0), degToRad(0)],
-            texture: tex.nitro,
+            texture: tex.rochosa,
             format: arrayCube,
             children: [],
           },
         ],
+      },
+      {
+        name: "cam1",
+        draw: true,
+        translation: [cam1Position[0], cam1Position[1], cam1Position[2]],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.rochosa,
+        format: arrayCube,
+        children: [],
+      },
+      {
+        name: "cam2",
+        draw: true,
+        translation: [cam2Position[0], cam2Position[1], cam2Position[2]],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.rochosa,
+        format: arrayCube,
+        children: [],
+      },
+      {
+        name: "cam3",
+        draw: true,
+        translation: [cam3Position[0], cam3Position[1], cam3Position[2]],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.rochosa,
+        format: arrayCube,
+        children: [],
       },
     ],
   };
@@ -387,6 +417,13 @@ function drawScene(now) {
 
   var fRotationRadians = degToRad(config.spin_x);
 
+  nodeInfosByName["cam1"].trs.translation = cam1Position;
+  nodeInfosByName["cam2"].trs.translation = cam2Position;
+  nodeInfosByName["cam3"].trs.translation = cam3Position;
+  nodeInfosByName["cam1"].trs.scale = [0.1, 0.1, 0.1];
+  nodeInfosByName["cam2"].trs.scale = [0.1, 0.1, 0.1];
+  nodeInfosByName["cam3"].trs.scale = [0.1, 0.1, 0.1];
+
   adjust;
   speed = 3;
 
@@ -394,7 +431,7 @@ function drawScene(now) {
   computeMatrix(nodeInfosByName[`${selectedObject}`], config);
   // computeMatrixLuz(nodeInfosByName["light1"], config);
   // computeMatrixLuz2(nodeInfosByName["light2"], config);
-  //computeMatrixCuboVertice(nodeInfosByName["cuboVertice0"], config);
+  computeMatrixCuboVertice(nodeInfosByName["cuboVertice0"], config);
   //nodeInfosByName
 
   //nodeInfosByName["cubo0"].trs.rotation[0] = degToRad(config.rotate);

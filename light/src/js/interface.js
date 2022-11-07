@@ -9,24 +9,45 @@ var config = {
   camera_y: 4,
   camera_z: 10,
 
-  // addCuboMadeira: function () {
-  //   addCubo();
-  // },
+  addCaixa: function () {
+    countC++;
+
+    objeto.children.push({
+      name: `cubo${countC}`,
+      translation: [0, countC, 0],
+    });
+
+    objectsToDraw = [];
+    objects = [];
+    nodeInfosByName = {};
+    scene = makeNode(objeto);
+    objects.forEach(function (object) {
+      object.drawInfo.uniforms.u_texture = tex[config.textura];
+    });
+  },
+  addCuboRochoso: function () {
+    addCubo();
+  },
   triangulo: 0,
 
   criarVertice: function () {
     // console.log(`indices antes: ${arrays_pyramid.indices}`);
     // console.log(`arrays_pyramid.position antes: ${arrays_pyramid.position}`);
     var n = config.triangulo * 3;
-    var inicio = arrays_pyramid.position.slice(0, n * 3);
-    var temp = arrays_pyramid.position.slice(n * 3, (n + 3) * 3);
-    var resto = arrays_pyramid.position.slice(
+    var inicio = nodeInfosByName[
+      `${selectedObject}`
+    ].format.position.data.slice(0, n * 3);
+    var temp = nodeInfosByName[`${selectedObject}`].format.position.data.slice(
+      n * 3,
+      (n + 3) * 3
+    );
+    var resto = nodeInfosByName[`${selectedObject}`].format.position.data.slice(
       (n + 3) * 3,
-      arrays_pyramid.position.length
+      nodeInfosByName[`${selectedObject}`].format.position.data.length
     );
     var newind = [];
     //arrays_pyramid.position = [...inicio, ...resto];
-    arrays_pyramid.position = [...inicio];
+    nodeInfosByName[`${selectedObject}`].format.position.data = [...inicio];
 
     var a = temp.slice(0, 3);
     var b = temp.slice(3, 6);
@@ -34,11 +55,17 @@ var config = {
     var d = calculaMeioDoTriangulo([...a, ...b, ...c]);
 
     var nTex = config.triangulo * 2;
-    var inicioTex = arrays_pyramid.texcoord.slice(0, nTex * 2);
-    var tempTex = arrays_pyramid.texcoord.slice(nTex * 2, (nTex + 3) * 2);
-    var restoTex = arrays_pyramid.texcoord.slice(
+    var inicioTex = nodeInfosByName[
+      `${selectedObject}`
+    ].format.texcoord.data.slice(0, nTex * 2);
+    var tempTex = nodeInfosByName[
+      `${selectedObject}`
+    ].format.texcoord.data.slice(nTex * 2, (nTex + 3) * 2);
+    var restoTex = nodeInfosByName[
+      `${selectedObject}`
+    ].format.texcoord.data.slice(
       (nTex + 3) * 2,
-      arrays_pyramid.texcoord.length
+      nodeInfosByName[`${selectedObject}`].format.texcoord.data.length
     );
     var at = tempTex.slice(0, 2);
     var bt = tempTex.slice(2, 4);
@@ -46,7 +73,7 @@ var config = {
     var dt = calculaMeioDaTextura([...at, ...bt, ...ct]);
     //arrays_pyramid.texcoord = [...inicioTex, ...restoTex];
     //console.log(`dt: ${dt}`);
-    arrays_pyramid.texcoord = [...inicioTex];
+    nodeInfosByName[`${selectedObject}`].format.texcoord.data = [...inicioTex];
 
     // arrays_pyramid.position = new Float32Array([
     //   ...arrays_pyramid.position,
@@ -59,50 +86,94 @@ var config = {
     var novatexcoord = [...bt, ...dt, ...at];
 
     console.log(`novotri: ${novotri}`);
-    arrays_pyramid.position = [...arrays_pyramid.position, ...novotri];
-    arrays_pyramid.texcoord = [...arrays_pyramid.texcoord, ...novatexcoord];
+    nodeInfosByName[`${selectedObject}`].format.position.data = [
+      ...nodeInfosByName[`${selectedObject}`].format.position.data,
+      ...novotri,
+    ];
+    nodeInfosByName[`${selectedObject}`].format.texcoord.data = [
+      ...nodeInfosByName[`${selectedObject}`].format.texcoord.data,
+      ...novatexcoord,
+    ];
 
     // novotri = [...b, ...d, ...c];
     novotri = [...c, ...d, ...b];
     novatexcoord = [...ct, ...dt, ...bt];
 
     console.log(`novotri: ${novotri}`);
-    arrays_pyramid.position = [...arrays_pyramid.position, ...novotri];
-    arrays_pyramid.texcoord = [...arrays_pyramid.texcoord, ...novatexcoord];
+    nodeInfosByName[`${selectedObject}`].format.position.data = [
+      ...nodeInfosByName[`${selectedObject}`].format.position.data,
+      ...novotri,
+    ];
+    nodeInfosByName[`${selectedObject}`].format.texcoord.data = [
+      ...nodeInfosByName[`${selectedObject}`].format.texcoord.data,
+      ...novatexcoord,
+    ];
 
     // novotri = [...c, ...d, ...a];
     novotri = [...a, ...d, ...c];
     novatexcoord = [...ct, ...dt, ...bt];
 
     console.log(`novotri: ${novotri}`);
-    arrays_pyramid.position = [...arrays_pyramid.position, ...novotri];
-    arrays_pyramid.texcoord = [...arrays_pyramid.texcoord, ...novatexcoord];
+    nodeInfosByName[`${selectedObject}`].format.position.data = [
+      ...nodeInfosByName[`${selectedObject}`].format.position.data,
+      ...novotri,
+    ];
+    nodeInfosByName[`${selectedObject}`].format.texcoord.data = [
+      ...nodeInfosByName[`${selectedObject}`].format.texcoord.data,
+      ...novatexcoord,
+    ];
 
-    arrays_pyramid.position = [...arrays_pyramid.position, ...resto];
-    arrays_pyramid.texcoord = [...arrays_pyramid.texcoord, ...restoTex];
+    nodeInfosByName[`${selectedObject}`].format.position.data = [
+      ...nodeInfosByName[`${selectedObject}`].format.position.data,
+      ...resto,
+    ];
+    nodeInfosByName[`${selectedObject}`].format.texcoord.data = [
+      ...nodeInfosByName[`${selectedObject}`].format.texcoord.data,
+      ...restoTex,
+    ];
 
-    console.log(`position depois dos triangulos: ${arrays_pyramid.position}`);
-    console.log(arrays_pyramid.position.length);
+    console.log(
+      `position depois dos triangulos: ${
+        nodeInfosByName[`${selectedObject}`].format.position.data
+      }`
+    );
+    //console.log(arrays_pyramid.position.length);
 
-    for (let index = 0; index < arrays_pyramid.position.length / 3; index++) {
+    for (
+      let index = 0;
+      index <
+      nodeInfosByName[`${selectedObject}`].format.position.data.length / 3;
+      index++
+    ) {
       newind = [...newind, index];
     }
-    arrays_pyramid.indices = newind;
+    nodeInfosByName[`${selectedObject}`].format.indices.data = newind;
 
-    console.log(`indices: ${arrays_pyramid.indices}`);
+    //console.log(`indices: ${arrays_pyramid.indices}`);
 
     // console.log(`arrays_pyramid.position: ${arrays_pyramid.position}`);
 
-    arrays_pyramid.normal = [];
-    for (let index = 0; index < arrays_pyramid.normal.length; index++) {
-      arrays_pyramid.normal = [...arrays_pyramid.normal, 0];
+    nodeInfosByName[`${selectedObject}`].format.normal.data = [];
+    for (
+      let index = 0;
+      index < nodeInfosByName[`${selectedObject}`].format.normal.data;
+      index++
+    ) {
+      nodeInfosByName[`${selectedObject}`].format.normal.data = [
+        ...nodeInfosByName[`${selectedObject}`].format.normal.data,
+        0,
+      ];
     }
-    arrays_pyramid.normal = calculateNormal(
-      arrays_pyramid.position,
-      arrays_pyramid.indices
+    nodeInfosByName[`${selectedObject}`].format.normal.data = calculateNormal(
+      nodeInfosByName[`${selectedObject}`].format.position.data,
+      nodeInfosByName[`${selectedObject}`].format.indices.data
     );
     //mapTexture();
-    cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
+    nodeInfosByName[`${selectedObject}`].node.drawInfo.bufferInfo =
+      twgl.createBufferInfoFromArrays(
+        gl,
+        nodeInfosByName[`${selectedObject}`].format
+      );
 
     objectsToDraw = [];
     objects = [];
@@ -111,6 +182,16 @@ var config = {
     objects.forEach(function (object) {
       object.drawInfo.uniforms.u_texture = tex[config.textura];
     });
+
+    listOfVertices = [];
+    for (
+      let index = 0;
+      index <
+      nodeInfosByName[`${selectedObject}`].format.position.data.length / 3;
+      index++
+    ) {
+      listOfVertices = [...listOfVertices, index];
+    }
 
     gui.destroy();
     gui = null;
@@ -134,9 +215,9 @@ var config = {
   scaley: 1.0,
   scalez: 1.0,
   listVertices: 1,
-  luzx: 3,
-  luzy: 0,
-  luzz: 0,
+  luzx: 5.8,
+  luzy: 4.5,
+  luzz: 8.1,
   shininess: 300.0,
   camera_1: false,
   camera_2: false,
@@ -149,7 +230,7 @@ var config = {
   vertice2: 0,
   coordv: 0,
   coordu: 0,
-  // obj: 0,
+  obj: 0,
 };
 
 var folder_vertice;
@@ -159,7 +240,7 @@ var folder_luz;
 var folder_triangulo;
 var folder_coordTex;
 
-//fixed camera position variables
+//fixed cameras variables
 var cam1Position = [4, 4, 10];
 var cam2Position = [1.5, 1.5, 3];
 var cam3Position = [-3, -2, -5];
@@ -192,6 +273,7 @@ const loadGUI = () => {
   folder_matrix.add(config, "scaley", -10, 10, 0.1);
   folder_matrix.add(config, "scalez", -10, 10, 0.1);
 
+  // gui.add(config, "addCaixa");
   folder_camera
     .add(config, "camera_1")
     .listen()
@@ -316,10 +398,9 @@ const loadGUI = () => {
   });
 
   folder_vertice.add(config, "vertice", listOfVertices).onChange(function () {
-    const temp = arrays_pyramid.position.slice(
-      config.vertice * 3,
-      config.vertice * 3 + 3
-    );
+    const temp = nodeInfosByName[
+      `${selectedObject}`
+    ].format.position.data.slice(config.vertice * 3, config.vertice * 3 + 3);
 
     config.vx = temp[0];
     config.vy = temp[1];
@@ -367,18 +448,44 @@ const loadGUI = () => {
     arrLuz[config.luzIndex].position.y = config.luzy;
     arrLuz[config.luzIndex].position.z = config.luzz;
   });
-  folder_luz.add(config, "luzz", -20, 20, 0.01).onChange(function () {
+  folder_luz.add(config, "luzz", -20, 200, 0.01).onChange(function () {
     arrLuz[config.luzIndex].position.x = config.luzx;
     arrLuz[config.luzIndex].position.y = config.luzy;
     arrLuz[config.luzIndex].position.z = config.luzz;
   });
   folder_luz.add(config, "shininess", 0, 3000, 0.1);
+  folder_camera
+    .add(config, "camera_1")
+    .listen()
+    .onChange(function () {
+      config.camera_2 = false;
+      config.camera_3 = false;
+      // config.camera_x = 4;
+      // config.camera_y = 4;
+      // config.camera_z = 10;
+      // cameraPosition = [4, 4, 10];
+      selectedCamera = 0;
+      cameraMatrix = m4.lookAt(
+        arrCameras[selectedCamera].cameraPosition,
+        arrCameras[selectedCamera].target,
+        arrCameras[selectedCamera].up
+      );
+      config.camera_x = arrCameras[selectedCamera].cameraPosition[0];
+      config.camera_y = arrCameras[selectedCamera].cameraPosition[1];
+      config.camera_z = arrCameras[selectedCamera].cameraPosition[2];
+      config.upVectorx = arrCameras[selectedCamera].up[0];
+      config.upVectory = arrCameras[selectedCamera].up[1];
+      config.upVectorz = arrCameras[selectedCamera].up[2];
+      config.targetx = arrCameras[selectedCamera].target[0];
+      config.targety = arrCameras[selectedCamera].target[1];
+      config.targetz = arrCameras[selectedCamera].target[2];
+      gui.updateDisplay();
+    });
 
   folder_coordTex.add(config, "vertice2", listOfVertices).onChange(function () {
-    const temp = arrays_pyramid.texcoord.slice(
-      config.vertice2 * 2,
-      config.vertice2 * 2 + 2
-    );
+    const temp = nodeInfosByName[
+      `${selectedObject}`
+    ].format.texcoord.data.slice(config.vertice2 * 2, config.vertice2 * 2 + 2);
     config.coordu = temp[0];
     config.coordv = temp[1];
     gui.updateDisplay();
@@ -390,6 +497,60 @@ const loadGUI = () => {
     changeTexCoord();
   });
 
+  folder_camera
+    .add(config, "camera_2")
+    .listen()
+    .onChange(function () {
+      config.camera_1 = false;
+      config.camera_3 = false;
+      // config.camera_x = -20;
+      // config.camera_y = 4;
+      // config.camera_z = 10;
+      // cameraPosition = [-20, 4, 10];
+      selectedCamera = 1;
+      cameraMatrix = m4.lookAt(
+        arrCameras[selectedCamera].cameraPosition,
+        arrCameras[selectedCamera].target,
+        arrCameras[selectedCamera].up
+      );
+      config.camera_x = arrCameras[selectedCamera].cameraPosition[0];
+      config.camera_y = arrCameras[selectedCamera].cameraPosition[1];
+      config.camera_z = arrCameras[selectedCamera].cameraPosition[2];
+      config.upVectorx = arrCameras[selectedCamera].up[0];
+      config.upVectory = arrCameras[selectedCamera].up[1];
+      config.upVectorz = arrCameras[selectedCamera].up[2];
+      config.targetx = arrCameras[selectedCamera].target[0];
+      config.targety = arrCameras[selectedCamera].target[1];
+      config.targetz = arrCameras[selectedCamera].target[2];
+      gui.updateDisplay();
+    });
+  folder_camera
+    .add(config, "camera_3")
+    .listen()
+    .onChange(function () {
+      config.camera_1 = false;
+      config.camera_2 = false;
+      // config.camera_x = 4;
+      // config.camera_y = 4;
+      // config.camera_z = 35;
+      // cameraPosition = [4, 4, 35];
+      selectedCamera = 2;
+      cameraMatrix = m4.lookAt(
+        arrCameras[selectedCamera].cameraPosition,
+        arrCameras[selectedCamera].target,
+        arrCameras[selectedCamera].up
+      );
+      config.camera_x = arrCameras[selectedCamera].cameraPosition[0];
+      config.camera_y = arrCameras[selectedCamera].cameraPosition[1];
+      config.camera_z = arrCameras[selectedCamera].cameraPosition[2];
+      config.upVectorx = arrCameras[selectedCamera].up[0];
+      config.upVectory = arrCameras[selectedCamera].up[1];
+      config.upVectorz = arrCameras[selectedCamera].up[2];
+      config.targetx = arrCameras[selectedCamera].target[0];
+      config.targety = arrCameras[selectedCamera].target[1];
+      config.targetz = arrCameras[selectedCamera].target[2];
+      gui.updateDisplay();
+    });
   folder_luz.add(config, "textura", listTex).onChange(function () {
     objects.forEach(function (object) {
       object.drawInfo.uniforms.u_texture = tex[config.textura];
@@ -402,19 +563,19 @@ const loadGUI = () => {
   folder_luz.addColor(palette, "corSpec").onChange(function () {
     arrLuz[config.luzIndex].spec = palette.corSpec;
   });
-  // gui.add(config, "obj", listOfObjects).onChange(function () {
-  //   selectedObject = config.obj;
-  //   config.scalex = nodeInfosByName[`${selectedObject}`].trs.scale[0];
-  //   config.scaley = nodeInfosByName[`${selectedObject}`].trs.scale[1];
-  //   config.scalez = nodeInfosByName[`${selectedObject}`].trs.scale[2];
-  //   config.x = nodeInfosByName[`${selectedObject}`].trs.translation[0];
-  //   config.y = nodeInfosByName[`${selectedObject}`].trs.translation[1];
-  //   config.z = nodeInfosByName[`${selectedObject}`].trs.translation[2];
-  //   config.spin_x = nodeInfosByName[`${selectedObject}`].trs.rotation[0];
-  //   config.spin_y = nodeInfosByName[`${selectedObject}`].trs.rotation[1];
+  gui.add(config, "obj", listOfObjects).onChange(function () {
+    selectedObject = config.obj;
+    config.scalex = nodeInfosByName[`${selectedObject}`].trs.scale[0];
+    config.scaley = nodeInfosByName[`${selectedObject}`].trs.scale[1];
+    config.scalez = nodeInfosByName[`${selectedObject}`].trs.scale[2];
+    config.x = nodeInfosByName[`${selectedObject}`].trs.translation[0];
+    config.y = nodeInfosByName[`${selectedObject}`].trs.translation[1];
+    config.z = nodeInfosByName[`${selectedObject}`].trs.translation[2];
+    config.spin_x = nodeInfosByName[`${selectedObject}`].trs.rotation[0];
+    config.spin_y = nodeInfosByName[`${selectedObject}`].trs.rotation[1];
 
-  //   gui.destroy();
-  //   gui = null;
-  // });
-  // gui.add(config, "addCuboMadeira");
+    gui.destroy();
+    gui = null;
+  });
+  gui.add(config, "addCuboRochoso");
 };
