@@ -30,9 +30,9 @@ var config = {
   scaley: 1.0,
   scalez: 1.0,
   listVertices: 1,
-  // luzx: 5.8,
-  // luzy: 4.5,
-  // luzz: 8.1,
+  luzx: 5.8,
+  luzy: 4.5,
+  luzz: 8.1,
   shininess: 300.0,
   cam_space_invaders: true,
   camera_2: false,
@@ -122,17 +122,17 @@ const loadGUI = () => {
       gui.updateDisplay();
     });
 
-  folder_camera.add(config, "camera_x", -50, 50, 0.01).onChange(function () {
+  folder_camera.add(config, "camera_x", -50, 500, 0.01).onChange(function () {
     if (config.cam_space_invaders) cam1Position[0] = config.camera_x;
     else if (config.camera_2) cam2Position[0] = config.camera_x;
     else if (config.camera_3) cam3Position[0] = config.camera_x;
   });
-  folder_camera.add(config, "camera_y", -50, 50, 0.01).onChange(function () {
+  folder_camera.add(config, "camera_y", -50, 500, 0.01).onChange(function () {
     if (config.cam_space_invaders) cam1Position[1] = config.camera_y;
     else if (config.camera_2) cam2Position[1] = config.camera_y;
     else if (config.camera_3) cam3Position[1] = config.camera_y;
   });
-  folder_camera.add(config, "camera_z", -50, 50, 0.01).onChange(function () {
+  folder_camera.add(config, "camera_z", -50, 500, 0.01).onChange(function () {
     if (config.cam_space_invaders) cam1Position[2] = config.camera_z;
     else if (config.camera_2) cam2Position[2] = config.camera_z;
     else if (config.camera_3) cam3Position[2] = config.camera_z;
@@ -189,26 +189,29 @@ const loadGUI = () => {
 
   //     gui.updateDisplay();
   //   });
-  folder_camera.add(config, "targetx", -10, 10, 0.01).onChange(function () {
+  folder_camera.add(config, "targetx", -10, 1000, 0.01).onChange(function () {
     arrCameras[selectedCamera].target = [
       config.targetx,
       config.targety,
       config.targetz,
     ];
+    gui.updateDisplay();
   });
-  folder_camera.add(config, "targety", -10, 10, 0.01).onChange(function () {
+  folder_camera.add(config, "targety", -10, 1000, 0.01).onChange(function () {
     arrCameras[selectedCamera].target = [
       config.targetx,
       config.targety,
       config.targetz,
     ];
+    gui.updateDisplay();
   });
-  folder_camera.add(config, "targetz", -10, 10, 0.01).onChange(function () {
+  folder_camera.add(config, "targetz", -10, 1000, 0.01).onChange(function () {
     arrCameras[selectedCamera].target = [
       config.targetx,
       config.targety,
       config.targetz,
     ];
+    gui.updateDisplay();
   });
 
   folder_vertice.add(config, "vertice", listOfVertices).onChange(function () {
@@ -243,24 +246,24 @@ const loadGUI = () => {
   folder_vertice.add(config, "vz", -10, 10, 0.1).onChange(function () {
     moveVertice();
   });
-  // folder_luz.add(config, "luzIndex", listOfLights).onChange(function () {
-  //   config.luzx = arrLuz[config.luzIndex].position.x;
-  //   config.luzy = arrLuz[config.luzIndex].position.y;
-  //   config.luzz = arrLuz[config.luzIndex].position.z;
-  //   palette.corLuz = arrLuz[config.luzIndex].color;
-  //   palette.corSpec = arrLuz[config.luzIndex].spec;
+  folder_luz.add(config, "luzIndex", listOfLights).onChange(function () {
+    config.luzx = arrLuz[config.luzIndex].position.x;
+    config.luzy = arrLuz[config.luzIndex].position.y;
+    config.luzz = arrLuz[config.luzIndex].position.z;
+    palette.corLuz = arrLuz[config.luzIndex].color;
+    palette.corSpec = arrLuz[config.luzIndex].spec;
 
-  //   gui.updateDisplay();
-  // });
-  // folder_luz.add(config, "luzx", -20, 20, 0.01).onChange(function () {
-  //   arrLuz[config.luzIndex].position.x = config.luzx;
-  // });
-  // folder_luz.add(config, "luzy", -20, 20, 0.01).onChange(function () {
-  //   arrLuz[config.luzIndex].position.y = config.luzy;
-  // });
-  // folder_luz.add(config, "luzz", -20, 20, 0.01).onChange(function () {
-  //   arrLuz[config.luzIndex].position.z = config.luzz;
-  // });
+    gui.updateDisplay();
+  });
+  folder_luz.add(config, "luzx", -200, 2000, 0.1).onChange(function () {
+    arrLuz[config.luzIndex].position.x = config.luzx;
+  });
+  folder_luz.add(config, "luzy", -200, 2000, 0.1).onChange(function () {
+    arrLuz[config.luzIndex].position.y = config.luzy;
+  });
+  folder_luz.add(config, "luzz", -200, 2000, 0.1).onChange(function () {
+    arrLuz[config.luzIndex].position.z = config.luzz;
+  });
   folder_luz.add(config, "shininess", 0, 3000, 0.1).onChange(function () {
     arrLuz[config.luzIndex].shine = config.shininess;
   });

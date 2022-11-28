@@ -42,12 +42,21 @@ var selectedObject = 0;
 var listOfObjects = [0];
 var index = 1;
 var darTiro = false;
-var startTiro = false;
+var startTiro = true;
+var barreiraLife = [3, 3, 3, 3];
+var praEsquerda = false;
+var chanceDeAtirar = 0;
+var inimigoAtirou = false;
+var startTiroInimigo = true;
+var inimigoAtirador = 0;
+var atingiuBarreira = false;
+var youLose = false;
+var enemiesKilled = [0];
 
 var arrLuz = [
-  new Luz([0, 2.25, 20], [100, 100, 100], [255, 255, 255], 3000),
+  new Luz([0, 2.25, 20], [100, 100, 100], [255, 255, 255], 5000),
   new Luz([0, -20, 20], [255, 255, 255], [255, 255, 255], 5000),
-  new Luz([0, -20, 0], [0, 0, 0], [255, 255, 255], 300),
+  new Luz([0, -20, 0], [0, 0, 0], [255, 255, 255], 5000),
 ];
 
 //CAMERA VARIABLES
@@ -85,6 +94,7 @@ function makeNode(nodeDescription) {
       programInfo: programInfo,
       bufferInfo: bufferInfo,
       vertexArray: vertexArray,
+      boundingBox: nodeDescription.boundingBox,
     };
 
     objectsToDraw.push(node.drawInfo);
@@ -121,11 +131,29 @@ function main() {
     barrier1: {
       src: "http://127.0.0.1:5500/space invaders/texture/barrier1.png",
     },
+    barrier1_1: {
+      src: "http://127.0.0.1:5500/space invaders/texture/barrier1_1.png",
+    },
+    barrier1_2: {
+      src: "http://127.0.0.1:5500/space invaders/texture/barrier1_2.png",
+    },
     barrier2: {
       src: "http://127.0.0.1:5500/space invaders/texture/barrier2.png",
     },
+    barrier2_1: {
+      src: "http://127.0.0.1:5500/space invaders/texture/barrier2_1.png",
+    },
+    barrier2_2: {
+      src: "http://127.0.0.1:5500/space invaders/texture/barrier2_2.png",
+    },
     shot: {
       src: "http://127.0.0.1:5500/space invaders/texture/shot.png",
+    },
+    you_died: {
+      src: "http://127.0.0.1:5500/space invaders/texture/you_died.png",
+    },
+    venceu: {
+      src: "http://127.0.0.1:5500/space invaders/texture/venceu.jpg",
     },
   });
   gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
@@ -190,144 +218,137 @@ function main() {
     draw: false,
     children: [
       {
-        name: "space_invader_0",
-        draw: true,
-        translation: [-7.5, 0, 0],
-        rotation: [degToRad(0), degToRad(0), degToRad(0)],
-        children: [],
-        texture: tex.spaceinvaderW,
-        format: arrayCube,
-        children: [],
-      },
-      {
-        name: "space_invader_1",
-        draw: true,
-        translation: [-5.0, 0, 0],
-        rotation: [degToRad(0), degToRad(0), degToRad(0)],
-        children: [],
-        texture: tex.spaceinvaderW,
-        format: arrayCube,
-        children: [],
-      },
-      {
-        name: "space_invader_2",
-        draw: true,
-        translation: [-2.5, 0, 0],
-        rotation: [degToRad(0), degToRad(0), degToRad(0)],
-        children: [],
-        texture: tex.spaceinvaderW,
-        format: arrayCube,
-        children: [],
-      },
-      {
-        name: "space_invader_3",
-        draw: true,
-        translation: [0.0, 0, 0],
-        rotation: [degToRad(0), degToRad(0), degToRad(0)],
-        children: [],
-        texture: tex.spaceinvaderW,
-        format: arrayCube,
-        children: [],
-      },
-      {
-        name: "space_invader_4",
-        draw: true,
-        translation: [2.5, 0, 0],
-        rotation: [degToRad(0), degToRad(0), degToRad(0)],
-        children: [],
-        texture: tex.spaceinvaderW,
-        format: arrayCube,
-        children: [],
-      },
-      {
-        name: "space_invader_5",
-        draw: true,
-        translation: [5.0, 0, 0],
-        rotation: [degToRad(0), degToRad(0), degToRad(0)],
-        children: [],
-        texture: tex.spaceinvaderW,
-        format: arrayCube,
-        children: [],
-      },
-      {
-        name: "space_invader_6",
-        draw: true,
-        translation: [7.5, 0, 0],
-        rotation: [degToRad(0), degToRad(0), degToRad(0)],
-        children: [],
-        texture: tex.spaceinvaderW,
-        format: arrayCube,
-        children: [],
-      },
-      {
-        name: "space_invader_7",
-        draw: true,
-        translation: [-7.5, 2.5, 0],
-        rotation: [degToRad(0), degToRad(0), degToRad(0)],
-        children: [],
-        texture: tex.spaceinvader2,
-        format: arrayCube,
-        children: [],
-      },
-      {
-        name: "space_invader_8",
-        draw: true,
-        translation: [-5.0, 2.5, 0],
-        rotation: [degToRad(0), degToRad(0), degToRad(0)],
-        children: [],
-        texture: tex.spaceinvader2,
-        format: arrayCube,
-        children: [],
-      },
-      {
-        name: "space_invader_9",
-        draw: true,
-        translation: [-2.5, 2.5, 0],
-        rotation: [degToRad(0), degToRad(0), degToRad(0)],
-        children: [],
-        texture: tex.spaceinvader2,
-        format: arrayCube,
-        children: [],
-      },
-      {
-        name: "space_invader_10",
-        draw: true,
-        translation: [0.0, 2.5, 0],
-        rotation: [degToRad(0), degToRad(0), degToRad(0)],
-        children: [],
-        texture: tex.spaceinvader2,
-        format: arrayCube,
-        children: [],
-      },
-      {
-        name: "space_invader_11",
-        draw: true,
-        translation: [2.5, 2.5, 0],
-        rotation: [degToRad(0), degToRad(0), degToRad(0)],
-        children: [],
-        texture: tex.spaceinvader2,
-        format: arrayCube,
-        children: [],
-      },
-      {
-        name: "space_invader_12",
-        draw: true,
-        translation: [5.0, 2.5, 0],
-        rotation: [degToRad(0), degToRad(0), degToRad(0)],
-        children: [],
-        texture: tex.spaceinvader2,
-        format: arrayCube,
-        children: [],
-      },
-      {
-        name: "space_invader_13",
-        draw: true,
-        translation: [7.5, 2.5, 0],
-        rotation: [degToRad(0), degToRad(0), degToRad(0)],
-        children: [],
-        texture: tex.spaceinvader2,
-        format: arrayCube,
-        children: [],
+        name: "space_invaders",
+        draw: false,
+        translation: [0, 0, 0],
+        children: [
+          {
+            name: "space_invader_0",
+            draw: true,
+            translation: [-7.5, 0, 0],
+            rotation: [degToRad(0), degToRad(0), degToRad(0)],
+            children: [],
+            texture: tex.spaceinvaderW,
+            format: arrayCube,
+          },
+          {
+            name: "space_invader_1",
+            draw: true,
+            translation: [-5.0, 0, 0],
+            rotation: [degToRad(0), degToRad(0), degToRad(0)],
+            children: [],
+            texture: tex.spaceinvaderW,
+            format: arrayCube,
+          },
+          {
+            name: "space_invader_2",
+            draw: true,
+            translation: [-2.5, 0, 0],
+            rotation: [degToRad(0), degToRad(0), degToRad(0)],
+            children: [],
+            texture: tex.spaceinvaderW,
+            format: arrayCube,
+          },
+          {
+            name: "space_invader_3",
+            draw: true,
+            translation: [0.0, 0, 0],
+            rotation: [degToRad(0), degToRad(0), degToRad(0)],
+            children: [],
+            texture: tex.spaceinvaderW,
+            format: arrayCube,
+          },
+          {
+            name: "space_invader_4",
+            draw: true,
+            translation: [2.5, 0, 0],
+            rotation: [degToRad(0), degToRad(0), degToRad(0)],
+            children: [],
+            texture: tex.spaceinvaderW,
+            format: arrayCube,
+          },
+          {
+            name: "space_invader_5",
+            draw: true,
+            translation: [5.0, 0, 0],
+            rotation: [degToRad(0), degToRad(0), degToRad(0)],
+            children: [],
+            texture: tex.spaceinvaderW,
+            format: arrayCube,
+          },
+          {
+            name: "space_invader_6",
+            draw: true,
+            translation: [7.5, 0, 0],
+            rotation: [degToRad(0), degToRad(0), degToRad(0)],
+            children: [],
+            texture: tex.spaceinvaderW,
+            format: arrayCube,
+          },
+          {
+            name: "space_invader_7",
+            draw: true,
+            translation: [-7.5, 2.5, 0],
+            rotation: [degToRad(0), degToRad(0), degToRad(0)],
+            children: [],
+            texture: tex.spaceinvader2,
+            format: arrayCube,
+          },
+          {
+            name: "space_invader_8",
+            draw: true,
+            translation: [-5.0, 2.5, 0],
+            rotation: [degToRad(0), degToRad(0), degToRad(0)],
+            children: [],
+            texture: tex.spaceinvader2,
+            format: arrayCube,
+          },
+          {
+            name: "space_invader_9",
+            draw: true,
+            translation: [-2.5, 2.5, 0],
+            rotation: [degToRad(0), degToRad(0), degToRad(0)],
+            children: [],
+            texture: tex.spaceinvader2,
+            format: arrayCube,
+          },
+          {
+            name: "space_invader_10",
+            draw: true,
+            translation: [0.0, 2.5, 0],
+            rotation: [degToRad(0), degToRad(0), degToRad(0)],
+            children: [],
+            texture: tex.spaceinvader2,
+            format: arrayCube,
+          },
+          {
+            name: "space_invader_11",
+            draw: true,
+            translation: [2.5, 2.5, 0],
+            rotation: [degToRad(0), degToRad(0), degToRad(0)],
+            children: [],
+            texture: tex.spaceinvader2,
+            format: arrayCube,
+          },
+          {
+            name: "space_invader_12",
+            draw: true,
+            translation: [5.0, 2.5, 0],
+            rotation: [degToRad(0), degToRad(0), degToRad(0)],
+            children: [],
+            texture: tex.spaceinvader2,
+            format: arrayCube,
+          },
+          {
+            name: "space_invader_13",
+            draw: true,
+            translation: [7.5, 2.5, 0],
+            rotation: [degToRad(0), degToRad(0), degToRad(0)],
+            children: [],
+            texture: tex.spaceinvader2,
+            format: arrayCube,
+          },
+        ],
       },
       {
         name: "player",
@@ -337,47 +358,42 @@ function main() {
         children: [],
         texture: tex.spaceship,
         format: arrayCube,
-        children: [],
       },
       {
-        name: "barreira1",
+        name: "barreira0",
         draw: true,
         translation: [-5, -15, 0],
         rotation: [degToRad(0), degToRad(0), degToRad(0)],
         children: [],
         texture: tex.barrier2,
         format: arrayCube,
-        children: [],
       },
       {
-        name: "barreira2",
+        name: "barreira1",
         draw: true,
         translation: [-3, -15, 0],
         rotation: [degToRad(0), degToRad(0), degToRad(0)],
         children: [],
         texture: tex.barrier1,
         format: arrayCube,
-        children: [],
       },
       {
-        name: "barreira3",
+        name: "barreira2",
         draw: true,
         translation: [3, -15, 0],
         rotation: [degToRad(0), degToRad(0), degToRad(0)],
         children: [],
         texture: tex.barrier2,
         format: arrayCube,
-        children: [],
       },
       {
-        name: "barreira4",
+        name: "barreira3",
         draw: true,
         translation: [5, -15, 0],
         rotation: [degToRad(0), degToRad(0), degToRad(0)],
         children: [],
         texture: tex.barrier1,
         format: arrayCube,
-        children: [],
       },
       {
         name: "tiro",
@@ -387,7 +403,24 @@ function main() {
         children: [],
         texture: tex.shot,
         format: arrayCube,
+      },
+      {
+        name: "tiro_i",
+        draw: true,
+        translation: [0, 9999, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
         children: [],
+        texture: tex.shot,
+        format: arrayCube,
+      },
+      {
+        name: "endgame",
+        draw: true,
+        translation: [72, 72, 72],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.venceu,
+        format: arrayCube,
       },
     ],
   };
@@ -466,6 +499,7 @@ function main() {
   //console.log(objects);
   // Draw the scene.
 }
+
 function drawScene(now) {
   now *= 0.001;
   deltaTime = now - then;
@@ -485,10 +519,30 @@ function drawScene(now) {
   // Compute the projection matrix
   var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
   var projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, 1, 200);
-
   // Compute the camera's matrix using look at.
-  if (config.modo_fps) {
-    // cameraPosition = [nodeInfosByName["player"].trs.translation[0], -22, 2];
+  if (youLose || enemiesKilled[0] >= 14) {
+    if (youLose)
+      nodeInfosByName["endgame"].node.drawInfo.uniforms.u_texture =
+        tex.you_died;
+
+    cameraPosition[0] = 72;
+    cameraPosition[1] = 72;
+    cameraPosition[2] = 78;
+
+    arrLuz[1].position.x = 2000;
+    arrLuz[1].position.y = 2000;
+    arrLuz[1].position.z = 5000;
+    arrLuz[1].shine = 99999;
+    arrLuz[0].color = [0, 0, 0];
+    arrLuz[2].color = [0, 0, 0];
+
+    nodeInfosByName["endgame"].trs.rotation[1] = now / 5;
+
+    target = [70, 75, 0];
+    nodeInfosByName["endgame"].trs.scale[0] = 1.75;
+    nodeInfosByName["endgame"].trs.scale[1] = 1.75;
+    nodeInfosByName["endgame"].trs.scale[2] = 0.15;
+  } else if (config.modo_fps) {
     cameraPosition[0] = nodeInfosByName["player"].trs.translation[0];
 
     if (cameraPosition[1] > -22) cameraPosition[1] -= 0.5;
@@ -539,17 +593,7 @@ function drawScene(now) {
     target = [0, -10, 0];
   }
 
-  // target = [config.targetx, config.targety, config.targetz];
-
   up = [0, 1, 0];
-  // up = [config.upVectorx, config.upVectory, config.upVectorz];
-
-  // cameraMatrix = m4.lookAt(
-  //   arrCameras[selectedCamera].cameraPosition,
-  //   arrCameras[selectedCamera].target,
-  //   arrCameras[selectedCamera].up
-  // );
-
   cameraMatrix = m4.lookAt(cameraPosition, target, up);
 
   // Make a view matrix from the camera matrix.
@@ -575,19 +619,102 @@ function drawScene(now) {
     if (nodeInfosByName["tiro"].trs.translation[1] >= 15) {
       darTiro = false;
       startTiro = true;
-      nodeInfosByName["tiro"].trs.translation[1] = 9999;
+      removerTiro(nodeInfosByName["tiro"]);
       arrLuz[2].color = [0, 0, 0];
     }
   }
 
+  if (!inimigoAtirou) {
+    chanceDeAtirar = Math.random();
+    if (chanceDeAtirar > 0.18) inimigoAtirou = true;
+  } else chanceDeAtirar = 0;
+
+  // console.log(inimigoAtirou);
+
+  if (inimigoAtirou && enemiesKilled < 14) {
+    if (startTiroInimigo) {
+      startTiroInimigo = false;
+      // arrLuz[2].color = [255, 0, 0];
+
+      inimigoAtirador = Math.floor(Math.random() * 14);
+      console.log("el atirador: " + inimigoAtirador);
+      nodeInfosByName["tiro_i"].trs.translation = [
+        nodeInfosByName[`space_invader_${inimigoAtirador}`].trs.translation[0] +
+          nodeInfosByName[`space_invaders`].trs.translation[0],
+        nodeInfosByName[`space_invader_${inimigoAtirador}`].trs.translation[1] +
+          nodeInfosByName[`space_invaders`].trs.translation[1],
+        nodeInfosByName[`space_invader_${inimigoAtirador}`].trs.translation[2] +
+          nodeInfosByName[`space_invaders`].trs.translation[2],
+      ];
+    }
+
+    if (
+      nodeInfosByName["tiro_i"].trs.translation[1] > -35 &&
+      nodeInfosByName["tiro_i"].trs.translation[1] < 1000
+    ) {
+      nodeInfosByName["tiro_i"].trs.translation[1] -= 1;
+      // console.log(nodeInfosByName["tiro_i"].trs.translation[1]);
+      for (let index = 0; index < 4; index++) {
+        if (
+          checkColision2(
+            nodeInfosByName[`barreira${index}`].trs.translation,
+            nodeInfosByName["tiro_i"].trs.translation
+          )
+        ) {
+          atingiuBarreira = true;
+          nodeInfosByName["tiro_i"].trs.translation[1] -= 1.5;
+          console.log("bati na barreira");
+          // console.log(nodeInfosByName["tiro_i"].trs.translation[1]);
+        }
+      }
+    }
+
+    if (
+      nodeInfosByName["tiro_i"].trs.translation[1] <= -35 ||
+      atingiuBarreira
+    ) {
+      // console.log("TESTE");
+      inimigoAtirou = false;
+      startTiroInimigo = true;
+      atingiuBarreira = false;
+      if (nodeInfosByName["tiro_i"].trs.translation[1] <= -35) {
+        removerTiro(nodeInfosByName["tiro_i"]);
+      }
+    }
+  }
+
   nodeInfosByName["tiro"].trs.scale = [0.2, 1, 0.2];
+  nodeInfosByName["tiro_i"].trs.scale = [0.2, 1, 0.2];
 
   arrLuz[2].position.x = nodeInfosByName["tiro"].trs.translation[0];
   arrLuz[2].position.y = nodeInfosByName["tiro"].trs.translation[1];
   arrLuz[2].position.z = nodeInfosByName["tiro"].trs.translation[2];
 
+  if (praEsquerda) {
+    nodeInfosByName["space_invaders"].trs.translation[0] -= 0.05;
+
+    if (nodeInfosByName["space_invaders"].trs.translation[0] < -5) {
+      praEsquerda = false;
+    }
+  } else {
+    nodeInfosByName["space_invaders"].trs.translation[0] += 0.05;
+
+    if (nodeInfosByName["space_invaders"].trs.translation[0] > 5) {
+      praEsquerda = true;
+    }
+  }
+
   adjust;
   speed = 3;
+
+  computeMatrixEnemy(nodeInfosByName, nodeInfosByName["tiro"], enemiesKilled);
+  computeMatrixBarrier(nodeInfosByName, nodeInfosByName["tiro"], barreiraLife);
+  computeMatrixBarrier(
+    nodeInfosByName,
+    nodeInfosByName["tiro_i"],
+    barreiraLife
+  );
+  computeMatrixPlayer(nodeInfosByName["player"], nodeInfosByName["tiro_i"]);
 
   // Update all world matrices in the scene graph
   scene.updateWorldMatrix();

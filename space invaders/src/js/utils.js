@@ -293,6 +293,117 @@ function addCubo() {
   gui = null;
 }
 
+const checkColision = (obj, shot) => {
+  var size = 1.3; // size representa o raio do sceneDescription
+
+  // testa se y é positivo
+  if (shot[1] >= 0) {
+    if (shot[0] > obj[0] - size && shot[0] < obj[0] + size) {
+      if (shot[1] > obj[1] - size) {
+        //colidiu
+        console.log("colidiu+");
+        return true;
+      }
+    }
+  } else {
+    if (shot[0] > obj[0] - size && shot[0] < obj[0] + size) {
+      if (shot[1] > obj[1] + size) {
+        //colidiu
+        console.log("colidiu-");
+
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+const checkColision2 = (obj, shot) => {
+  if (
+    shot[0] < obj[0] + 1.5 &&
+    shot[0] + 1.5 > obj[0] &&
+    shot[1] < obj[1] + 1.5 &&
+    1.5 + shot[1] > obj[1]
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+const computeMatrixPlayer = (player, tiro) => {
+  if (checkColision2(player.trs.translation, tiro.trs.translation)) {
+    removerTiro(tiro);
+    youLose = true;
+    console.log("PERDEU");
+  }
+};
+
+const computeMatrixEnemy = (nodes, tiro, enemiesKilled) => {
+  for (let index = 0; index < 14; index++) {
+    enemyTranslation = [
+      nodes[`space_invader_${index}`].trs.translation[0] +
+        nodes[`space_invaders`].trs.translation[0],
+      nodes[`space_invader_${index}`].trs.translation[1],
+      nodes[`space_invader_${index}`].trs.translation[2],
+    ];
+    if (checkColision2(enemyTranslation, tiro.trs.translation)) {
+      removerTiro(tiro);
+      nodes[`space_invader_${index}`].trs.translation[1] = -9999;
+      enemiesKilled[0] += 1;
+      console.log(enemiesKilled[0]);
+    }
+  }
+};
+
+const computeMatrixBarrier = (nodes, tiro, barreiraLife) => {
+  for (let index = 0; index < 4; index++) {
+    if (
+      checkColision2(
+        nodes[`barreira${index}`].trs.translation,
+        tiro.trs.translation
+      )
+    ) {
+      removerTiro(tiro);
+      arrLuz[2].color = [0, 0, 0];
+
+      barreiraLife[index] -= 1;
+
+      if (index == 0 || index == 2) {
+        if (barreiraLife[index] == 2) {
+          nodes[`barreira${index}`].node.drawInfo.uniforms.u_texture =
+            tex.barrier2_1;
+        } else if (barreiraLife[index] == 1) {
+          nodes[`barreira${index}`].node.drawInfo.uniforms.u_texture =
+            tex.barrier2_2;
+        } else if (barreiraLife[index] <= 0) {
+          nodes[`barreira${index}`].trs.translation[1] = -9999;
+        }
+      } else {
+        if (barreiraLife[index] == 2) {
+          nodes[`barreira${index}`].node.drawInfo.uniforms.u_texture =
+            tex.barrier1_1;
+        } else if (barreiraLife[index] == 1) {
+          nodes[`barreira${index}`].node.drawInfo.uniforms.u_texture =
+            tex.barrier1_2;
+        } else if (barreiraLife[index] <= 0) {
+          nodes[`barreira${index}`].trs.translation[1] = -9999;
+        }
+      }
+      console.log(barreiraLife);
+      // objectsToDraw = [];
+      // objects = [];
+      // nodeInfosByName = {};
+      // scene = makeNode(objeto);
+    }
+  }
+};
+
+const removerTiro = (tiro) => {
+  tiro.trs.translation[1] = 9999;
+  // arrLuz[2].color = [0, 0, 0];
+};
+
 canvas.addEventListener("keydown", function (e) {
   switch (e.key) {
     case "ArrowRight":
