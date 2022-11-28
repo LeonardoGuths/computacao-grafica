@@ -35,32 +35,19 @@ var palette = {
   corSpec: [255, 255, 255], // RGB array
 };
 var tex;
-var listTex = [
-  "rochosa",
-  "terra",
-  "gelo",
-  "nitro",
-  "madeira",
-  "areia",
-  "gokussj3",
-];
 var selectedCamera = 0;
 var deltaTime = 0;
 var then;
 var selectedObject = 0;
 var listOfObjects = [0];
 var index = 1;
+var darTiro = false;
+var startTiro = false;
 
 var arrLuz = [
-  new Luz([-0.5, -0.5, 3], [255, 255, 255], [255, 255, 255], 300),
-  new Luz([0, 3, 0], [0, 255, 0], [255, 255, 255], 300),
-  new Luz([3, 0, 0], [0, 0, 255], [255, 255, 255], 300),
-];
-
-let arrCameras = [
-  new Camera([10, 4, 0], [0, 0, 0], [0, 1, 0]),
-  new Camera([-5, 4, 0], [3.5, -23.5, 50.5], [0, 1, 0]),
-  new Camera([5, 4, 8], [0, 35, 0], [0, 1, 0]),
+  new Luz([0, 2.25, 20], [100, 100, 100], [255, 255, 255], 3000),
+  new Luz([0, -20, 20], [255, 255, 255], [255, 255, 255], 5000),
+  new Luz([0, -20, 0], [0, 0, 0], [255, 255, 255], 300),
 ];
 
 //CAMERA VARIABLES
@@ -122,26 +109,23 @@ function main() {
   }
 
   tex = twgl.createTextures(gl, {
-    rochosa: {
-      src: "http://127.0.0.1:5500/trab1/texture/rochosa.jpg",
+    spaceinvaderW: {
+      src: "http://127.0.0.1:5500/space invaders/texture/spaceinvaderW.png",
     },
-    nitro: {
-      src: "http://127.0.0.1:5500/trab1/texture/nitro.png",
+    spaceinvader2: {
+      src: "http://127.0.0.1:5500/space invaders/texture/spaceinvader2.png",
     },
-    areia: {
-      src: "http://127.0.0.1:5500/trab1/texture/areia.jpg",
+    spaceship: {
+      src: "http://127.0.0.1:5500/space invaders/texture/spaceship.png",
     },
-    gelo: {
-      src: "http://127.0.0.1:5500/trab1/texture/gelo.jpg  ",
+    barrier1: {
+      src: "http://127.0.0.1:5500/space invaders/texture/barrier1.png",
     },
-    madeira: {
-      src: "http://127.0.0.1:5500/trab1/texture/madeira.jpg",
+    barrier2: {
+      src: "http://127.0.0.1:5500/space invaders/texture/barrier2.png",
     },
-    terra: {
-      src: "http://127.0.0.1:5500/trab1/texture/terra.jpg",
-    },
-    gokussj3: {
-      src: "http://127.0.0.1:5500/trab1/texture/gokussj3.jpg",
+    shot: {
+      src: "http://127.0.0.1:5500/space invaders/texture/shot.png",
     },
   });
   gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
@@ -206,82 +190,202 @@ function main() {
     draw: false,
     children: [
       {
-        name: "0",
+        name: "space_invader_0",
         draw: true,
-        type: "cube",
-        translation: [0, 0, 0],
-        rotation: [degToRad(0), degToRad(0), degToRad(0)],
-        texture: tex.rochosa,
-        format: arrayCube,
-        children: [
-          {
-            name: "cuboVertice0",
-            draw: true,
-            translation: [0, 0, 0],
-            rotation: [degToRad(0), degToRad(0), degToRad(0)],
-            texture: tex.rochosa,
-            format: arrayCube,
-            children: [],
-          },
-        ],
-      },
-      {
-        name: "cam1",
-        draw: true,
-        translation: [cam1Position[0], cam1Position[1], cam1Position[2]],
+        translation: [-7.5, 0, 0],
         rotation: [degToRad(0), degToRad(0), degToRad(0)],
         children: [],
-        texture: tex.rochosa,
+        texture: tex.spaceinvaderW,
         format: arrayCube,
         children: [],
       },
       {
-        name: "cam1_1",
+        name: "space_invader_1",
         draw: true,
-        translation: [cam1Position[0], cam1Position[1], cam1Position[2]],
+        translation: [-5.0, 0, 0],
         rotation: [degToRad(0), degToRad(0), degToRad(0)],
         children: [],
-        texture: tex.rochosa,
+        texture: tex.spaceinvaderW,
         format: arrayCube,
         children: [],
       },
       {
-        name: "cam2",
+        name: "space_invader_2",
         draw: true,
-        translation: [cam2Position[0], cam2Position[1], cam2Position[2]],
+        translation: [-2.5, 0, 0],
         rotation: [degToRad(0), degToRad(0), degToRad(0)],
         children: [],
-        texture: tex.rochosa,
+        texture: tex.spaceinvaderW,
         format: arrayCube,
         children: [],
       },
       {
-        name: "cam2_1",
+        name: "space_invader_3",
         draw: true,
-        translation: [cam2Position[0], cam2Position[1], cam2Position[2]],
+        translation: [0.0, 0, 0],
         rotation: [degToRad(0), degToRad(0), degToRad(0)],
         children: [],
-        texture: tex.rochosa,
+        texture: tex.spaceinvaderW,
         format: arrayCube,
         children: [],
       },
       {
-        name: "cam3",
+        name: "space_invader_4",
         draw: true,
-        translation: [cam3Position[0], cam3Position[1], cam3Position[2]],
+        translation: [2.5, 0, 0],
         rotation: [degToRad(0), degToRad(0), degToRad(0)],
         children: [],
-        texture: tex.rochosa,
+        texture: tex.spaceinvaderW,
         format: arrayCube,
         children: [],
       },
       {
-        name: "cam3_1",
+        name: "space_invader_5",
         draw: true,
-        translation: [cam3Position[0], cam3Position[1], cam3Position[2]],
+        translation: [5.0, 0, 0],
         rotation: [degToRad(0), degToRad(0), degToRad(0)],
         children: [],
-        texture: tex.rochosa,
+        texture: tex.spaceinvaderW,
+        format: arrayCube,
+        children: [],
+      },
+      {
+        name: "space_invader_6",
+        draw: true,
+        translation: [7.5, 0, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.spaceinvaderW,
+        format: arrayCube,
+        children: [],
+      },
+      {
+        name: "space_invader_7",
+        draw: true,
+        translation: [-7.5, 2.5, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.spaceinvader2,
+        format: arrayCube,
+        children: [],
+      },
+      {
+        name: "space_invader_8",
+        draw: true,
+        translation: [-5.0, 2.5, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.spaceinvader2,
+        format: arrayCube,
+        children: [],
+      },
+      {
+        name: "space_invader_9",
+        draw: true,
+        translation: [-2.5, 2.5, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.spaceinvader2,
+        format: arrayCube,
+        children: [],
+      },
+      {
+        name: "space_invader_10",
+        draw: true,
+        translation: [0.0, 2.5, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.spaceinvader2,
+        format: arrayCube,
+        children: [],
+      },
+      {
+        name: "space_invader_11",
+        draw: true,
+        translation: [2.5, 2.5, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.spaceinvader2,
+        format: arrayCube,
+        children: [],
+      },
+      {
+        name: "space_invader_12",
+        draw: true,
+        translation: [5.0, 2.5, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.spaceinvader2,
+        format: arrayCube,
+        children: [],
+      },
+      {
+        name: "space_invader_13",
+        draw: true,
+        translation: [7.5, 2.5, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.spaceinvader2,
+        format: arrayCube,
+        children: [],
+      },
+      {
+        name: "player",
+        draw: true,
+        translation: [0, -20, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.spaceship,
+        format: arrayCube,
+        children: [],
+      },
+      {
+        name: "barreira1",
+        draw: true,
+        translation: [-5, -15, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.barrier2,
+        format: arrayCube,
+        children: [],
+      },
+      {
+        name: "barreira2",
+        draw: true,
+        translation: [-3, -15, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.barrier1,
+        format: arrayCube,
+        children: [],
+      },
+      {
+        name: "barreira3",
+        draw: true,
+        translation: [3, -15, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.barrier2,
+        format: arrayCube,
+        children: [],
+      },
+      {
+        name: "barreira4",
+        draw: true,
+        translation: [5, -15, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.barrier1,
+        format: arrayCube,
+        children: [],
+      },
+      {
+        name: "tiro",
+        draw: true,
+        translation: [0, 9999, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.shot,
         format: arrayCube,
         children: [],
       },
@@ -345,8 +449,8 @@ function main() {
   //console.log(mapAllVertices(arrays_pyramid.position, arrays_pyramid.indices));
   //cameraPosition = [4, 4, 10];
   // cameraPosition = arrCameras[0].cameraPosition;
-  cameraPosition = [4, 4, 10];
-  target = [0, 0, 0];
+  cameraPosition = [0, -10, 30];
+  target = [0, -10, 0];
   up = [0, 1, 0];
 
   const temp = arrays_pyramid.position.slice(
@@ -383,47 +487,62 @@ function drawScene(now) {
   var projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, 1, 200);
 
   // Compute the camera's matrix using look at.
-  if (!config.camera_1 && !config.camera_2 && !config.camera_3) {
-    if (cameraPosition[0] > config.camera_x) cameraPosition[0] -= 1;
-    if (cameraPosition[0] < config.camera_x) cameraPosition[0] += 1;
+  if (config.modo_fps) {
+    // cameraPosition = [nodeInfosByName["player"].trs.translation[0], -22, 2];
+    cameraPosition[0] = nodeInfosByName["player"].trs.translation[0];
 
-    if (cameraPosition[1] > config.camera_y) cameraPosition[1] -= 1;
-    if (cameraPosition[1] < config.camera_y) cameraPosition[1] += 1;
+    if (cameraPosition[1] > -22) cameraPosition[1] -= 0.5;
+    if (cameraPosition[1] < -22) cameraPosition[1] += 0.5;
 
-    if (cameraPosition[2] > config.camera_z) cameraPosition[2] -= 1;
-    if (cameraPosition[2] < config.camera_z) cameraPosition[2] += 1;
-  } else if (config.camera_1) {
-    if (cameraPosition[0] > cam1Position[0]) cameraPosition[0] -= 0.5;
-    if (cameraPosition[0] < cam1Position[0]) cameraPosition[0] += 0.5;
+    if (cameraPosition[2] > 2) cameraPosition[2] -= 0.5;
+    if (cameraPosition[2] < 2) cameraPosition[2] += 0.5;
 
-    if (cameraPosition[1] > cam1Position[1]) cameraPosition[1] -= 0.5;
-    if (cameraPosition[1] < cam1Position[1]) cameraPosition[1] += 0.5;
+    target = [nodeInfosByName["player"].trs.translation[0], -10, 0];
+  } else {
+    if (!config.camera_1 && !config.camera_2 && !config.camera_3) {
+      if (cameraPosition[0] > config.camera_x) cameraPosition[0] -= 1;
+      if (cameraPosition[0] < config.camera_x) cameraPosition[0] += 1;
 
-    if (cameraPosition[2] > cam1Position[2]) cameraPosition[2] -= 0.5;
-    if (cameraPosition[2] < cam1Position[2]) cameraPosition[2] += 0.5;
-  } else if (config.camera_2) {
-    if (cameraPosition[0] > cam2Position[0]) cameraPosition[0] -= 0.5;
-    if (cameraPosition[0] < cam2Position[0]) cameraPosition[0] += 0.5;
+      if (cameraPosition[1] > config.camera_y) cameraPosition[1] -= 1;
+      if (cameraPosition[1] < config.camera_y) cameraPosition[1] += 1;
 
-    if (cameraPosition[1] > cam2Position[1]) cameraPosition[1] -= 0.5;
-    if (cameraPosition[1] < cam2Position[1]) cameraPosition[1] += 0.5;
+      if (cameraPosition[2] > config.camera_z) cameraPosition[2] -= 1;
+      if (cameraPosition[2] < config.camera_z) cameraPosition[2] += 1;
+    } else if (config.camera_1) {
+      if (cameraPosition[0] > cam1Position[0]) cameraPosition[0] -= 0.5;
+      if (cameraPosition[0] < cam1Position[0]) cameraPosition[0] += 0.5;
 
-    if (cameraPosition[2] > cam2Position[2]) cameraPosition[2] -= 0.5;
-    if (cameraPosition[2] < cam2Position[2]) cameraPosition[2] += 0.5;
-  } else if (config.camera_3) {
-    if (cameraPosition[0] > cam3Position[0]) cameraPosition[0] -= 0.5;
-    if (cameraPosition[0] < cam3Position[0]) cameraPosition[0] += 0.5;
+      if (cameraPosition[1] > cam1Position[1]) cameraPosition[1] -= 0.5;
+      if (cameraPosition[1] < cam1Position[1]) cameraPosition[1] += 0.5;
 
-    if (cameraPosition[1] > cam3Position[1]) cameraPosition[1] -= 0.5;
-    if (cameraPosition[1] < cam3Position[1]) cameraPosition[1] += 0.5;
+      if (cameraPosition[2] > cam1Position[2]) cameraPosition[2] -= 0.5;
+      if (cameraPosition[2] < cam1Position[2]) cameraPosition[2] += 0.5;
+    } else if (config.camera_2) {
+      if (cameraPosition[0] > cam2Position[0]) cameraPosition[0] -= 0.5;
+      if (cameraPosition[0] < cam2Position[0]) cameraPosition[0] += 0.5;
 
-    if (cameraPosition[2] > cam3Position[2]) cameraPosition[2] -= 0.5;
-    if (cameraPosition[2] < cam3Position[2]) cameraPosition[2] += 0.5;
+      if (cameraPosition[1] > cam2Position[1]) cameraPosition[1] -= 0.5;
+      if (cameraPosition[1] < cam2Position[1]) cameraPosition[1] += 0.5;
+
+      if (cameraPosition[2] > cam2Position[2]) cameraPosition[2] -= 0.5;
+      if (cameraPosition[2] < cam2Position[2]) cameraPosition[2] += 0.5;
+    } else if (config.camera_3) {
+      if (cameraPosition[0] > cam3Position[0]) cameraPosition[0] -= 0.5;
+      if (cameraPosition[0] < cam3Position[0]) cameraPosition[0] += 0.5;
+
+      if (cameraPosition[1] > cam3Position[1]) cameraPosition[1] -= 0.5;
+      if (cameraPosition[1] < cam3Position[1]) cameraPosition[1] += 0.5;
+
+      if (cameraPosition[2] > cam3Position[2]) cameraPosition[2] -= 0.5;
+      if (cameraPosition[2] < cam3Position[2]) cameraPosition[2] += 0.5;
+    }
+    target = [0, -10, 0];
   }
 
-  target = [config.targetx, config.targety, config.targetz];
-  // up = [0, 1, 0];
-  up = [config.upVectorx, config.upVectory, config.upVectorz];
+  // target = [config.targetx, config.targety, config.targetz];
+
+  up = [0, 1, 0];
+  // up = [config.upVectorx, config.upVectory, config.upVectorz];
 
   // cameraMatrix = m4.lookAt(
   //   arrCameras[selectedCamera].cameraPosition,
@@ -438,40 +557,40 @@ function drawScene(now) {
 
   viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
 
-  var fRotationRadians = degToRad(config.rotate_x);
+  if (darTiro) {
+    if (startTiro) {
+      startTiro = false;
+      arrLuz[2].color = [255, 0, 0];
 
-  nodeInfosByName["cam1"].trs.translation = cam1Position;
-  nodeInfosByName["cam2"].trs.translation = cam2Position;
-  nodeInfosByName["cam3"].trs.translation = cam3Position;
-  nodeInfosByName["cam1_1"].trs.translation = cam1Position;
-  nodeInfosByName["cam2_1"].trs.translation = cam2Position;
-  nodeInfosByName["cam3_1"].trs.translation = cam3Position;
-  nodeInfosByName["cam1"].trs.scale = [0.03, 0.03, 0.1];
-  nodeInfosByName["cam1_1"].trs.scale = [0.1, 0.03, 0.03];
-  nodeInfosByName["cam2"].trs.scale = [0.03, 0.03, 0.1];
-  nodeInfosByName["cam2_1"].trs.scale = [0.1, 0.03, 0.03];
-  nodeInfosByName["cam3"].trs.scale = [0.03, 0.03, 0.1];
-  nodeInfosByName["cam3_1"].trs.scale = [0.1, 0.03, 0.03];
+      nodeInfosByName["tiro"].trs.translation = [
+        nodeInfosByName["player"].trs.translation[0],
+        nodeInfosByName["player"].trs.translation[1],
+        nodeInfosByName["player"].trs.translation[2],
+      ];
+    }
+
+    if (nodeInfosByName["tiro"].trs.translation[1] < 15)
+      nodeInfosByName["tiro"].trs.translation[1] += 0.5;
+
+    if (nodeInfosByName["tiro"].trs.translation[1] >= 15) {
+      darTiro = false;
+      startTiro = true;
+      nodeInfosByName["tiro"].trs.translation[1] = 9999;
+      arrLuz[2].color = [0, 0, 0];
+    }
+  }
+
+  nodeInfosByName["tiro"].trs.scale = [0.2, 1, 0.2];
+
+  arrLuz[2].position.x = nodeInfosByName["tiro"].trs.translation[0];
+  arrLuz[2].position.y = nodeInfosByName["tiro"].trs.translation[1];
+  arrLuz[2].position.z = nodeInfosByName["tiro"].trs.translation[2];
 
   adjust;
   speed = 3;
 
-  //console.log(nodeInfosByName);
-  if (!config.spin) computeMatrix(nodeInfosByName[`${selectedObject}`], config);
-  else {
-    nodeInfosByName[`${selectedObject}`].trs.rotation[0] = now;
-    nodeInfosByName[`${selectedObject}`].trs.rotation[1] = now;
-  }
-  // computeMatrixLuz(nodeInfosByName["light1"], config);
-  // computeMatrixLuz2(nodeInfosByName["light2"], config);
-  computeMatrixCuboVertice(nodeInfosByName["cuboVertice0"], config);
-  //nodeInfosByName
-
-  //nodeInfosByName["cubo0"].trs.rotation[0] = degToRad(config.rotate);
   // Update all world matrices in the scene graph
   scene.updateWorldMatrix();
-  //console.log(arrLuz[0].position);
-  //console.log(cameraPosition);
 
   // Compute all the matrices for rendering
   objects.forEach(function (object) {
@@ -567,7 +686,7 @@ function drawScene(now) {
 
     // object.drawInfo.uniforms.u_shininess = config.shininess;
 
-    object.drawInfo.uniforms.u_texture = tex[config.textura];
+    // object.drawInfo.uniforms.u_texture = tex[config.textura];
   });
 
   // ------ Draw the objects --------

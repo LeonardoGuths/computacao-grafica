@@ -3,29 +3,14 @@ var config = {
   x: 0,
   y: 0,
   z: 0,
-  spin_x: 0,
-  spin_y: 0,
+  rotate_x: 0,
+  rotate_y: 0,
   camera_x: 4,
   camera_y: 4,
   camera_z: 10,
+  spin: false,
 
-  addCaixa: function () {
-    countC++;
-
-    objeto.children.push({
-      name: `cubo${countC}`,
-      translation: [0, countC, 0],
-    });
-
-    objectsToDraw = [];
-    objects = [];
-    nodeInfosByName = {};
-    scene = makeNode(objeto);
-    objects.forEach(function (object) {
-      object.drawInfo.uniforms.u_texture = tex[config.textura];
-    });
-  },
-  addCuboRochoso: function () {
+  adicionaCubo: function () {
     addCubo();
   },
   triangulo: 0,
@@ -54,7 +39,7 @@ var config = {
     var c = temp.slice(6, 9);
     var d = calculaMeioDoTriangulo([...a, ...b, ...c]);
 
-    var nTex = config.triangulo * 2;
+    var nTex = config.triangulo * 3;
     var inicioTex = nodeInfosByName[
       `${selectedObject}`
     ].format.texcoord.data.slice(0, nTex * 2);
@@ -111,7 +96,7 @@ var config = {
 
     // novotri = [...c, ...d, ...a];
     novotri = [...a, ...d, ...c];
-    novatexcoord = [...ct, ...dt, ...bt];
+    novatexcoord = [...at, ...dt, ...ct];
 
     console.log(`novotri: ${novotri}`);
     nodeInfosByName[`${selectedObject}`].format.position.data = [
@@ -201,15 +186,12 @@ var config = {
   targety: 0,
   targetz: 0,
   upVectorx: 0,
-  upVectory: 0,
+  upVectory: 1,
   upVectorz: 0,
   vx: 0,
   vy: 0,
   vz: 0,
   vertice: 0,
-  teste0: 5.8,
-  teste1: 4.5,
-  teste2: 8.1,
 
   scalex: 1.0,
   scaley: 1.0,
@@ -247,33 +229,33 @@ var cam3Position = [-3, -2, -5];
 
 const loadGUI = () => {
   gui = new dat.GUI();
-  folder_vertice = gui.addFolder("Manipular vertices e triangulos");
-  folder_camera = gui.addFolder("Manipular cameras");
-  folder_luz = gui.addFolder("Manipular luzes e texturas");
-  folder_matrix = gui.addFolder("Manipular matrizes");
-  folder_triangulo = folder_vertice.addFolder("Manipular triangulos");
+  folder_vertice = gui.addFolder("Vertices e triangulos");
+  folder_camera = gui.addFolder("Cameras");
+  folder_luz = gui.addFolder("Luzes e texturas");
+  folder_matrix = gui.addFolder("Matrizes");
+  folder_triangulo = folder_vertice.addFolder("Triangulos");
   folder_coordTex = folder_luz.addFolder("Coordenadas textura");
   folder_luz.open();
-  folder_matrix
-    .add(config, "rotate", 0, 360, 0.5)
-    .listen()
-    .onChange(function () {
-      nodeInfosByName["cubo0"].trs.rotation[0] = degToRad(config.rotate);
-      // A ANIMACAO DE GIRAR SOBREPOE ESSA ALTERACAO TODA VEZ Q RENDERIZA
-      // TEM Q USAR OU UM OU OUTRO
-    });
+  // folder_matrix
+  //   .add(config, "rotate", 0, 360, 0.5)
+  //   .listen()
+  //   .onChange(function () {
+  //     nodeInfosByName["0"].trs.rotation[0] = degToRad(config.rotate);
+  //     // A ANIMACAO DE GIRAR SOBREPOE ESSA ALTERACAO TODA VEZ Q RENDERIZA
+  //     // TEM Q USAR OU UM OU OUTRO
+  //   });
   folder_matrix.add(config, "x", -10, 10, 0.5);
   folder_matrix.add(config, "y", -10, 10, 0.5);
   folder_matrix.add(config, "z", -10, 10, 0.5);
 
-  folder_matrix.add(config, "spin_x", -1000, 1000, 2);
-  folder_matrix.add(config, "spin_y", -1000, 1000, 2);
+  folder_matrix.add(config, "rotate_x", -1000, 1000, 0.01);
+  folder_matrix.add(config, "rotate_y", -1000, 1000, 0.01);
+  folder_matrix.add(config, "spin");
 
   folder_matrix.add(config, "scalex", -10, 10, 0.1);
   folder_matrix.add(config, "scaley", -10, 10, 0.1);
   folder_matrix.add(config, "scalez", -10, 10, 0.1);
 
-  // gui.add(config, "addCaixa");
   folder_camera
     .add(config, "camera_1")
     .listen()
@@ -324,14 +306,14 @@ const loadGUI = () => {
     else if (config.camera_3) cam3Position[2] = config.camera_z;
   });
 
-  folder_camera.add(config, "upVectorx", -20, 20, 0.1).onChange(function () {
+  folder_camera.add(config, "upVectorx", -1, 1, 0.1).onChange(function () {
     arrCameras[selectedCamera].up = [
       config.upVectorx,
       config.upVectory,
       config.upVectorz,
     ];
   });
-  folder_camera.add(config, "upVectory", -20, 20, 0.1).onChange(function () {
+  folder_camera.add(config, "upVectory", -1, 1, 0.1).onChange(function () {
     arrCameras[selectedCamera].up = [
       config.upVectorx,
       config.upVectory,
@@ -339,7 +321,7 @@ const loadGUI = () => {
     ];
   });
 
-  folder_camera.add(config, "upVectorz", -20, 20, 0.1).onChange(function () {
+  folder_camera.add(config, "upVectorz", -1, 1, 0.1).onChange(function () {
     arrCameras[selectedCamera].up = [
       config.upVectorx,
       config.upVectory,
@@ -440,47 +422,16 @@ const loadGUI = () => {
   });
   folder_luz.add(config, "luzx", -20, 20, 0.01).onChange(function () {
     arrLuz[config.luzIndex].position.x = config.luzx;
-    arrLuz[config.luzIndex].position.y = config.luzy;
-    arrLuz[config.luzIndex].position.z = config.luzz;
   });
   folder_luz.add(config, "luzy", -20, 20, 0.01).onChange(function () {
-    arrLuz[config.luzIndex].position.x = config.luzx;
     arrLuz[config.luzIndex].position.y = config.luzy;
+  });
+  folder_luz.add(config, "luzz", -20, 20, 0.01).onChange(function () {
     arrLuz[config.luzIndex].position.z = config.luzz;
   });
-  folder_luz.add(config, "luzz", -20, 200, 0.01).onChange(function () {
-    arrLuz[config.luzIndex].position.x = config.luzx;
-    arrLuz[config.luzIndex].position.y = config.luzy;
-    arrLuz[config.luzIndex].position.z = config.luzz;
+  folder_luz.add(config, "shininess", 0, 3000, 0.1).onChange(function () {
+    arrLuz[config.luzIndex].shine = config.shininess;
   });
-  folder_luz.add(config, "shininess", 0, 3000, 0.1);
-  folder_camera
-    .add(config, "camera_1")
-    .listen()
-    .onChange(function () {
-      config.camera_2 = false;
-      config.camera_3 = false;
-      // config.camera_x = 4;
-      // config.camera_y = 4;
-      // config.camera_z = 10;
-      // cameraPosition = [4, 4, 10];
-      selectedCamera = 0;
-      cameraMatrix = m4.lookAt(
-        arrCameras[selectedCamera].cameraPosition,
-        arrCameras[selectedCamera].target,
-        arrCameras[selectedCamera].up
-      );
-      config.camera_x = arrCameras[selectedCamera].cameraPosition[0];
-      config.camera_y = arrCameras[selectedCamera].cameraPosition[1];
-      config.camera_z = arrCameras[selectedCamera].cameraPosition[2];
-      config.upVectorx = arrCameras[selectedCamera].up[0];
-      config.upVectory = arrCameras[selectedCamera].up[1];
-      config.upVectorz = arrCameras[selectedCamera].up[2];
-      config.targetx = arrCameras[selectedCamera].target[0];
-      config.targety = arrCameras[selectedCamera].target[1];
-      config.targetz = arrCameras[selectedCamera].target[2];
-      gui.updateDisplay();
-    });
 
   folder_coordTex.add(config, "vertice2", listOfVertices).onChange(function () {
     const temp = nodeInfosByName[
@@ -497,60 +448,6 @@ const loadGUI = () => {
     changeTexCoord();
   });
 
-  folder_camera
-    .add(config, "camera_2")
-    .listen()
-    .onChange(function () {
-      config.camera_1 = false;
-      config.camera_3 = false;
-      // config.camera_x = -20;
-      // config.camera_y = 4;
-      // config.camera_z = 10;
-      // cameraPosition = [-20, 4, 10];
-      selectedCamera = 1;
-      cameraMatrix = m4.lookAt(
-        arrCameras[selectedCamera].cameraPosition,
-        arrCameras[selectedCamera].target,
-        arrCameras[selectedCamera].up
-      );
-      config.camera_x = arrCameras[selectedCamera].cameraPosition[0];
-      config.camera_y = arrCameras[selectedCamera].cameraPosition[1];
-      config.camera_z = arrCameras[selectedCamera].cameraPosition[2];
-      config.upVectorx = arrCameras[selectedCamera].up[0];
-      config.upVectory = arrCameras[selectedCamera].up[1];
-      config.upVectorz = arrCameras[selectedCamera].up[2];
-      config.targetx = arrCameras[selectedCamera].target[0];
-      config.targety = arrCameras[selectedCamera].target[1];
-      config.targetz = arrCameras[selectedCamera].target[2];
-      gui.updateDisplay();
-    });
-  folder_camera
-    .add(config, "camera_3")
-    .listen()
-    .onChange(function () {
-      config.camera_1 = false;
-      config.camera_2 = false;
-      // config.camera_x = 4;
-      // config.camera_y = 4;
-      // config.camera_z = 35;
-      // cameraPosition = [4, 4, 35];
-      selectedCamera = 2;
-      cameraMatrix = m4.lookAt(
-        arrCameras[selectedCamera].cameraPosition,
-        arrCameras[selectedCamera].target,
-        arrCameras[selectedCamera].up
-      );
-      config.camera_x = arrCameras[selectedCamera].cameraPosition[0];
-      config.camera_y = arrCameras[selectedCamera].cameraPosition[1];
-      config.camera_z = arrCameras[selectedCamera].cameraPosition[2];
-      config.upVectorx = arrCameras[selectedCamera].up[0];
-      config.upVectory = arrCameras[selectedCamera].up[1];
-      config.upVectorz = arrCameras[selectedCamera].up[2];
-      config.targetx = arrCameras[selectedCamera].target[0];
-      config.targety = arrCameras[selectedCamera].target[1];
-      config.targetz = arrCameras[selectedCamera].target[2];
-      gui.updateDisplay();
-    });
   folder_luz.add(config, "textura", listTex).onChange(function () {
     objects.forEach(function (object) {
       object.drawInfo.uniforms.u_texture = tex[config.textura];
@@ -571,11 +468,11 @@ const loadGUI = () => {
     config.x = nodeInfosByName[`${selectedObject}`].trs.translation[0];
     config.y = nodeInfosByName[`${selectedObject}`].trs.translation[1];
     config.z = nodeInfosByName[`${selectedObject}`].trs.translation[2];
-    config.spin_x = nodeInfosByName[`${selectedObject}`].trs.rotation[0];
-    config.spin_y = nodeInfosByName[`${selectedObject}`].trs.rotation[1];
+    config.rotate_x = nodeInfosByName[`${selectedObject}`].trs.rotation[0];
+    config.rotate_y = nodeInfosByName[`${selectedObject}`].trs.rotation[1];
 
-    gui.destroy();
-    gui = null;
+    gui.updateDisplay();
+    // gui = null;
   });
-  gui.add(config, "addCuboRochoso");
+  gui.add(config, "adicionaCubo");
 };

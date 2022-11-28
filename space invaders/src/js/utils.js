@@ -272,7 +272,7 @@ function addCubo() {
     translation: [0, 0, zpos],
     rotation: [degToRad(0), degToRad(0), degToRad(0)],
     format: newArray,
-    texture: tex.rochosa,
+    texture: tex.spaceinvaderW,
     children: [],
   });
   console.log(nodeInfosByName);
@@ -292,3 +292,26 @@ function addCubo() {
   gui.destroy();
   gui = null;
 }
+
+canvas.addEventListener("keydown", function (e) {
+  switch (e.key) {
+    case "ArrowRight":
+      nodeInfosByName["player"].trs.translation[0] += 0.5;
+      break;
+    case "ArrowLeft":
+      nodeInfosByName["player"].trs.translation[0] -= 0.5;
+      break;
+    case " ":
+      darTiro = true;
+      break;
+
+    // case "ArrowUp":
+    //   spawnNewShot = true;
+    //   break;
+
+    default:
+      console.log(e.key);
+      break;
+  }
+  //shotAudio.play();
+});
