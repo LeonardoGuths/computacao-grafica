@@ -149,6 +149,9 @@ function main() {
     shot: {
       src: "http://127.0.0.1:5500/space invaders/texture/shot.png",
     },
+    shot_i: {
+      src: "http://127.0.0.1:5500/space invaders/texture/shot_i.png",
+    },
     you_died: {
       src: "http://127.0.0.1:5500/space invaders/texture/you_died.png",
     },
@@ -410,7 +413,7 @@ function main() {
         translation: [0, 9999, 0],
         rotation: [degToRad(0), degToRad(0), degToRad(0)],
         children: [],
-        texture: tex.shot,
+        texture: tex.shot_i,
         format: arrayCube,
       },
       {
@@ -553,43 +556,15 @@ function drawScene(now) {
 
     target = [nodeInfosByName["player"].trs.translation[0], -10, 0];
   } else {
-    if (!config.camera_1 && !config.camera_2 && !config.camera_3) {
-      if (cameraPosition[0] > config.camera_x) cameraPosition[0] -= 1;
-      if (cameraPosition[0] < config.camera_x) cameraPosition[0] += 1;
+    if (cameraPosition[0] > cam1Position[0]) cameraPosition[0] -= 0.5;
+    if (cameraPosition[0] < cam1Position[0]) cameraPosition[0] += 0.5;
 
-      if (cameraPosition[1] > config.camera_y) cameraPosition[1] -= 1;
-      if (cameraPosition[1] < config.camera_y) cameraPosition[1] += 1;
+    if (cameraPosition[1] > cam1Position[1]) cameraPosition[1] -= 0.5;
+    if (cameraPosition[1] < cam1Position[1]) cameraPosition[1] += 0.5;
 
-      if (cameraPosition[2] > config.camera_z) cameraPosition[2] -= 1;
-      if (cameraPosition[2] < config.camera_z) cameraPosition[2] += 1;
-    } else if (config.camera_1) {
-      if (cameraPosition[0] > cam1Position[0]) cameraPosition[0] -= 0.5;
-      if (cameraPosition[0] < cam1Position[0]) cameraPosition[0] += 0.5;
+    if (cameraPosition[2] > cam1Position[2]) cameraPosition[2] -= 0.5;
+    if (cameraPosition[2] < cam1Position[2]) cameraPosition[2] += 0.5;
 
-      if (cameraPosition[1] > cam1Position[1]) cameraPosition[1] -= 0.5;
-      if (cameraPosition[1] < cam1Position[1]) cameraPosition[1] += 0.5;
-
-      if (cameraPosition[2] > cam1Position[2]) cameraPosition[2] -= 0.5;
-      if (cameraPosition[2] < cam1Position[2]) cameraPosition[2] += 0.5;
-    } else if (config.camera_2) {
-      if (cameraPosition[0] > cam2Position[0]) cameraPosition[0] -= 0.5;
-      if (cameraPosition[0] < cam2Position[0]) cameraPosition[0] += 0.5;
-
-      if (cameraPosition[1] > cam2Position[1]) cameraPosition[1] -= 0.5;
-      if (cameraPosition[1] < cam2Position[1]) cameraPosition[1] += 0.5;
-
-      if (cameraPosition[2] > cam2Position[2]) cameraPosition[2] -= 0.5;
-      if (cameraPosition[2] < cam2Position[2]) cameraPosition[2] += 0.5;
-    } else if (config.camera_3) {
-      if (cameraPosition[0] > cam3Position[0]) cameraPosition[0] -= 0.5;
-      if (cameraPosition[0] < cam3Position[0]) cameraPosition[0] += 0.5;
-
-      if (cameraPosition[1] > cam3Position[1]) cameraPosition[1] -= 0.5;
-      if (cameraPosition[1] < cam3Position[1]) cameraPosition[1] += 0.5;
-
-      if (cameraPosition[2] > cam3Position[2]) cameraPosition[2] -= 0.5;
-      if (cameraPosition[2] < cam3Position[2]) cameraPosition[2] += 0.5;
-    }
     target = [0, -10, 0];
   }
 
@@ -626,7 +601,7 @@ function drawScene(now) {
 
   if (!inimigoAtirou) {
     chanceDeAtirar = Math.random();
-    if (chanceDeAtirar > 0.18) inimigoAtirou = true;
+    if (chanceDeAtirar > 0.98) inimigoAtirou = true;
   } else chanceDeAtirar = 0;
 
   // console.log(inimigoAtirou);
@@ -652,7 +627,7 @@ function drawScene(now) {
       nodeInfosByName["tiro_i"].trs.translation[1] > -35 &&
       nodeInfosByName["tiro_i"].trs.translation[1] < 1000
     ) {
-      nodeInfosByName["tiro_i"].trs.translation[1] -= 1;
+      nodeInfosByName["tiro_i"].trs.translation[1] -= 0.5;
       // console.log(nodeInfosByName["tiro_i"].trs.translation[1]);
       for (let index = 0; index < 4; index++) {
         if (
@@ -662,7 +637,7 @@ function drawScene(now) {
           )
         ) {
           atingiuBarreira = true;
-          nodeInfosByName["tiro_i"].trs.translation[1] -= 1.5;
+          nodeInfosByName["tiro_i"].trs.translation[1] -= 1;
           console.log("bati na barreira");
           // console.log(nodeInfosByName["tiro_i"].trs.translation[1]);
         }
