@@ -436,13 +436,8 @@ canvas.addEventListener("keydown", function (e) {
       darTiro = true;
       break;
 
-    // case "ArrowUp":
-    //   spawnNewShot = true;
-    //   break;
-
     default:
       console.log(e.key);
       break;
   }
-  //shotAudio.play();
 });

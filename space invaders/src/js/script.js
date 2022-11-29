@@ -62,6 +62,10 @@ var enemyListTex = [
   "toto",
 ];
 
+let youwinAudio = new Audio(
+  "http://127.0.0.1:5500/space%20invaders/index.html"
+);
+
 var arrLuz = [
   new Luz([0, 2.25, 20], [100, 100, 100], [255, 255, 255], 5000),
   new Luz([0, -20, 20], [255, 255, 255], [255, 255, 255], 5000),
@@ -129,55 +133,67 @@ function main() {
 
   tex = twgl.createTextures(gl, {
     spaceinvaderW: {
-      src: "http://127.0.0.1:5500/space invaders/texture/spaceinvaderW.png",
+      src: "./texture/spaceinvaderW.png",
     },
     spaceinvader2: {
-      src: "http://127.0.0.1:5500/space invaders/texture/spaceinvader2.png",
+      src: "./texture/spaceinvader2.png",
     },
     toto: {
-      src: "http://127.0.0.1:5500/space invaders/texture/toto.jpg",
+      src: "./texture/toto.jpg",
+    },
+    credito: {
+      src: "./texture/credito.png",
+    },
+    credito2: {
+      src: "./texture/credito2.png",
+    },
+    credito3: {
+      src: "./texture/credito3.png",
+    },
+    credito4: {
+      src: "./texture/credito4.png",
     },
     wireframeW: {
-      src: "http://127.0.0.1:5500/space invaders/texture/wireframeW.png",
+      src: "./texture/wireframeW.png",
     },
     spaceship: {
-      src: "http://127.0.0.1:5500/space invaders/texture/spaceship.png",
+      src: "./texture/spaceship.png",
     },
     cg_book: {
-      src: "http://127.0.0.1:5500/space invaders/texture/cg_book.png",
+      src: "./texture/cg_book.png",
     },
     valeu: {
-      src: "http://127.0.0.1:5500/space invaders/texture/valeu.png",
+      src: "./texture/valeu.png",
     },
     barrier1: {
-      src: "http://127.0.0.1:5500/space invaders/texture/barrier1.png",
+      src: "./texture/barrier1.png",
     },
     barrier1_1: {
-      src: "http://127.0.0.1:5500/space invaders/texture/barrier1_1.png",
+      src: "./texture/barrier1_1.png",
     },
     barrier1_2: {
-      src: "http://127.0.0.1:5500/space invaders/texture/barrier1_2.png",
+      src: "./texture/barrier1_2.png",
     },
     barrier2: {
-      src: "http://127.0.0.1:5500/space invaders/texture/barrier2.png",
+      src: "./texture/barrier2.png",
     },
     barrier2_1: {
-      src: "http://127.0.0.1:5500/space invaders/texture/barrier2_1.png",
+      src: "./texture/barrier2_1.png",
     },
     barrier2_2: {
-      src: "http://127.0.0.1:5500/space invaders/texture/barrier2_2.png",
+      src: "./texture/barrier2_2.png",
     },
     shot: {
-      src: "http://127.0.0.1:5500/space invaders/texture/shot.png",
+      src: "./texture/shot.png",
     },
     shot_i: {
-      src: "http://127.0.0.1:5500/space invaders/texture/shot_i.png",
+      src: "./texture/shot_i.png",
     },
     you_died: {
-      src: "http://127.0.0.1:5500/space invaders/texture/you_died.png",
+      src: "./texture/you_died.png",
     },
     venceu: {
-      src: "http://127.0.0.1:5500/space invaders/texture/venceu.jpg",
+      src: "./texture/venceu.jpg",
     },
   });
   gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
@@ -446,6 +462,42 @@ function main() {
         texture: tex.venceu,
         format: arrayCube,
       },
+      {
+        name: "creditos1",
+        draw: true,
+        translation: [14.5, -25, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.credito,
+        format: arrayCube,
+      },
+      {
+        name: "creditos2",
+        draw: true,
+        translation: [18, -25, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.credito2,
+        format: arrayCube,
+      },
+      {
+        name: "creditos3",
+        draw: true,
+        translation: [21.5, -25, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.credito3,
+        format: arrayCube,
+      },
+      {
+        name: "creditos4",
+        draw: true,
+        translation: [25, -25, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
+        texture: tex.credito4,
+        format: arrayCube,
+      },
     ],
   };
 
@@ -548,6 +600,9 @@ function drawScene(now) {
     if (youLose)
       nodeInfosByName["endgame"].node.drawInfo.uniforms.u_texture =
         tex.you_died;
+
+    if (enemiesKilled >= 14) {
+    }
 
     cameraPosition[0] = 72;
     cameraPosition[1] = 72;
@@ -691,6 +746,16 @@ function drawScene(now) {
 
   nodeInfosByName["tiro"].trs.scale = [0.2, 1, 0.2];
   nodeInfosByName["tiro_i"].trs.scale = [0.2, 1, 0.2];
+
+  nodeInfosByName["creditos1"].trs.scale = [2, 1, 0.2];
+  nodeInfosByName["creditos2"].trs.scale = [2, 1, 0.2];
+  nodeInfosByName["creditos3"].trs.scale = [2, 1, 0.2];
+  nodeInfosByName["creditos4"].trs.scale = [2, 1, 0.2];
+
+  nodeInfosByName["creditos1"].trs.rotation[0] = now / 2;
+  nodeInfosByName["creditos2"].trs.rotation[1] = now / 2;
+  nodeInfosByName["creditos3"].trs.rotation[2] = now / 2;
+  nodeInfosByName["creditos4"].trs.rotation[0] = now / 2;
 
   arrLuz[2].position.x = nodeInfosByName["tiro"].trs.translation[0];
   arrLuz[2].position.y = nodeInfosByName["tiro"].trs.translation[1];
