@@ -331,11 +331,31 @@ const checkColision2 = (obj, shot) => {
   }
 };
 
+const checkColision3 = (obj, shot) => {
+  if (
+    shot[0] < obj[0] + 0.5 &&
+    shot[0] + 0.5 > obj[0] &&
+    shot[1] < obj[1] + 1.5 &&
+    1.5 + shot[1] > obj[1]
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
 const computeMatrixPlayer = (player, tiro) => {
   if (checkColision2(player.trs.translation, tiro.trs.translation)) {
     removerTiro(tiro);
     youLose = true;
     console.log("PERDEU");
+  }
+};
+
+const computeMatrixShots = (tiro, tiro_i) => {
+  if (checkColision3(tiro.trs.translation, tiro_i.trs.translation)) {
+    removerTiro(tiro);
+    tiro_i.trs.translation[1] = 9990;
   }
 };
 

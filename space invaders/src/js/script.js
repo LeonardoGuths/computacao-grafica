@@ -50,8 +50,17 @@ var inimigoAtirou = false;
 var startTiroInimigo = true;
 var inimigoAtirador = 0;
 var atingiuBarreira = false;
+var atingiuTiro = false;
 var youLose = false;
 var enemiesKilled = [0];
+var listTex = ["spaceship", "valeu"];
+var enemyListTex = [
+  "spaceinvaderW",
+  "spaceinvader2",
+  "cg_book",
+  "wireframeW",
+  "toto",
+];
 
 var arrLuz = [
   new Luz([0, 2.25, 20], [100, 100, 100], [255, 255, 255], 5000),
@@ -125,8 +134,20 @@ function main() {
     spaceinvader2: {
       src: "http://127.0.0.1:5500/space invaders/texture/spaceinvader2.png",
     },
+    toto: {
+      src: "http://127.0.0.1:5500/space invaders/texture/toto.jpg",
+    },
+    wireframeW: {
+      src: "http://127.0.0.1:5500/space invaders/texture/wireframeW.png",
+    },
     spaceship: {
       src: "http://127.0.0.1:5500/space invaders/texture/spaceship.png",
+    },
+    cg_book: {
+      src: "http://127.0.0.1:5500/space invaders/texture/cg_book.png",
+    },
+    valeu: {
+      src: "http://127.0.0.1:5500/space invaders/texture/valeu.png",
     },
     barrier1: {
       src: "http://127.0.0.1:5500/space invaders/texture/barrier1.png",
@@ -642,16 +663,26 @@ function drawScene(now) {
           // console.log(nodeInfosByName["tiro_i"].trs.translation[1]);
         }
       }
+      if (
+        checkColision3(
+          nodeInfosByName["tiro"].trs.translation,
+          nodeInfosByName["tiro_i"].trs.translation
+        )
+      ) {
+        atingiuTiro = true;
+      }
     }
 
     if (
       nodeInfosByName["tiro_i"].trs.translation[1] <= -35 ||
-      atingiuBarreira
+      atingiuBarreira ||
+      atingiuTiro
     ) {
       // console.log("TESTE");
       inimigoAtirou = false;
       startTiroInimigo = true;
       atingiuBarreira = false;
+      atingiuTiro = false;
       if (nodeInfosByName["tiro_i"].trs.translation[1] <= -35) {
         removerTiro(nodeInfosByName["tiro_i"]);
       }
@@ -690,6 +721,7 @@ function drawScene(now) {
     barreiraLife
   );
   computeMatrixPlayer(nodeInfosByName["player"], nodeInfosByName["tiro_i"]);
+  computeMatrixShots(nodeInfosByName["tiro"], nodeInfosByName["tiro_i"]);
 
   // Update all world matrices in the scene graph
   scene.updateWorldMatrix();
