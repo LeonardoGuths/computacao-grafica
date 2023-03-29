@@ -1,6 +1,6 @@
 # Computer Graphics
 
-- Repository containing codes and stuff from the Computer Graphics discipline.
+- Repository containing codes and stuff from the Computer Graphics class.
 
 <p align="center">
   <a href="https://portal.ufpel.edu.br/">
